@@ -21,11 +21,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="google" content="notranslate" />
       </head>
       <body className={`${overlock.variable} ${dmSerif.variable} ${roboto.variable} antialiased`}>
- 
-         
           {children}
           <Footer />
-        
       </body>
     </html>
   );
