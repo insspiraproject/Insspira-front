@@ -1,4 +1,4 @@
-const CrearPin = () => {
+const CreatePin = () => {
     return(
         <>
         
@@ -6,4 +6,4 @@ const CrearPin = () => {
     )
 }
 
-export default CrearPin;
+export default CreatePin;
