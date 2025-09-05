@@ -4,11 +4,11 @@ const Subscriptions = () => {
     
 
     return(
-        <div className="w-full min-h-screen flex flex-col md:flex-row justify-center items-center gap-6 mt-12 px-4 bg-[var(--violeta)]">
+        <div className="w-full min-h-screen flex flex-col md:flex-row justify-center items-center gap-6  px-4 bg-[var(--violeta)]">
   <StarBorder
     as="div"
     className="w-full max-w-sm flex-1"
-    color="cyan"
+    color="magenta"
     speed="5s"
   >
     <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col justify-between hover:scale-105 transition-transform">
