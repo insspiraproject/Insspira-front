@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  images: {
+    domains: ["miro.medium.com"], // agregá aquí todos los dominios que usarás
+  },
 };
 
 export default nextConfig;
