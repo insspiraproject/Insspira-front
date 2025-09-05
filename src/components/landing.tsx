@@ -7,7 +7,7 @@ import {images} from "@/utils/images";
 import Aurora from "./Aurora";
 export default function Landing() {
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center">
+        <div className="w-full h-max-screen flex flex-col items-center justify-center">
           
           <Aurora
         colorStops={["#743596","#AC80C6","#AAB1BF" ]}
