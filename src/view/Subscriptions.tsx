@@ -25,7 +25,7 @@ const Subscriptions = ()=> {
 
       <div className="relative w-80 p-[4px] rounded-2xl animate-border [background:conic-gradient(from_var(--border-angle),theme(colors.slate.600/.48)_80%,theme(colors.teal.500)_86%,theme(colors.cyan.300)_90%,theme(colors.teal.500)_94%,theme(colors.slate.600/.48))]">
         
-        <div className="bg-[var(--gris)] rounded-2xl shadow-md p-6 flex flex-col justify-between hover:scale-105 transition-transform">
+        <div className="bg-[var(--gris)] rounded-2xl shadow-md p-6 flex flex-col justify-between hover:scale-105 transition-transform ">
           <h2 className="text-2xl font-bold mb-4 text-center">Monthly</h2>
           <p className="text-gray-600 mb-6 text-center">Pay month-to-month</p>
           <p className="text-3xl font-semibold mb-6 text-center">$10 / month</p>
@@ -41,7 +41,7 @@ const Subscriptions = ()=> {
 
 
         <div className="relative w-80 p-[4px] rounded-2xl animate-border [background:conic-gradient(from_var(--border-angle),theme(colors.slate.600/.48)_80%,theme(colors.teal.500)_86%,theme(colors.cyan.300)_90%,theme(colors.teal.500)_94%,theme(colors.slate.600/.48))]">
-         <div className="bg-[var(--gris)] rounded-2xl shadow-md p-6 flex flex-col justify-between hover:scale-105 transition-transform w-80">
+         <div className="bg-[var(--gris)] rounded-2xl shadow-md p-6 flex flex-col justify-between hover:scale-105 transition-transform">
       <h2 className="text-2xl font-bold mb-4 text-center">Annual</h2>
       <p className="text-gray-600 mb-6 text-center">Save 20% with yearly payment</p>
       <p className="text-3xl font-semibold mb-6 text-center">$100 / year</p>
