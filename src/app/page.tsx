@@ -5,7 +5,6 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[var(--color-crema)]">
-      {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-[var(--color-morado)] to-[var(--color-rosa)] text-white py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 font-serif tracking-tight">
