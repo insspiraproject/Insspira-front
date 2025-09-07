@@ -1,14 +1,14 @@
 export interface IPinsMocks {
-    id: number;
-    image?: string | null;           // ← idem
-    description?: string | null;
-    likesCount: number;
-    commentsCount: number;
-    views: number;
-    user: string;
-  }
+  id: number;
+  image?: string | null;
+  description?: string | null;
+  likesCount: number;
+  commentsCount: number;
+  views: number;
+  user: string;
+}
 
-const pinsMock: IPinsMocks[] = [
+const rawPins: IPinsMocks[] = [
     {
         id: 1,
     image: "https://i.pinimg.com/736x/d3/3d/6b/d33d6b8adfa24b98f526dfcf7c5c2466.jpg",
@@ -99,6 +99,16 @@ const pinsMock: IPinsMocks[] = [
     views: 93,
     user: "Vanlentina Sánchez"
     },
-]
+];
+
+const FALLBACK = "/architecture.jpg";
+
+const pinsMock: IPinsMocks[] = rawPins.map((p) => ({
+  ...p,
+  image:
+    typeof p.image === "string" && p.image.trim().length > 0
+      ? p.image
+      : FALLBACK,
+}));
 
 export default pinsMock;

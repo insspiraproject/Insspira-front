@@ -1,36 +1,32 @@
-import { IPins } from "@/interface/IPins";
+import { IPins } from "@/interfaces/IPins";
 import { FcLike } from "react-icons/fc";
 import { FaCommentDots } from "react-icons/fa";
-import Image from "next/image";
+import SafeImage from "@/components/SafeImage";
 
 interface PinsCardProps {
   pin: IPins | null | undefined;
 }
 
-const ensureText = (v?: string | null, fallback = ""): string => {
-  return typeof v === "string" ? v : fallback;
-};
+const isNonEmpty = (v?: string | null): v is string =>
+  typeof v === "string" && v.trim().length > 0;
 
 const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
-  if (!pin) return null; // si llega undefined en prerender, no rompemos
-
-  const imgSrc = "/architecture.jpg";
-  const altText = ensureText(pin.description, "Pin image");
+  if (!pin) return null;
 
   const likes = typeof pin.likesCount === "number" ? pin.likesCount : 0;
   const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
-  const user = ensureText(pin.user);
+  const user = isNonEmpty(pin.user) ? pin.user : "";
 
   return (
     <div
       className="w-full sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] 
                  h-auto mt-6 flex flex-col"
     >
-      <Image
+      <SafeImage
         width={500}
         height={500}
-        src={imgSrc}  // <<— siempre string no vacío
-        alt={altText}
+        src={pin.image}                   // ← puede venir vacío; SafeImage lo blinda
+        alt={isNonEmpty(pin.description) ? pin.description : null}
         className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] 
                    object-cover opacity-80 rounded-t-xl 
                    hover:opacity-100 hover:shadow-xl hover:shadow-gray-500"
@@ -49,7 +45,9 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
           </div>
         </div>
         <p className="font-bold">{user}</p>
-        <span className="font-semibold">{altText}</span>
+        <span className="font-semibold">
+          {isNonEmpty(pin.description) ? pin.description : ""}
+        </span>
       </div>
     </div>
   );
