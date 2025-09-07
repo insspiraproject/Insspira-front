@@ -1,7 +1,7 @@
 import { IPins } from "@/interface/IPins";
 import { FcLike } from "react-icons/fc";
 import { FaCommentDots } from "react-icons/fa";
-
+import Image from "next/image";
 interface PinsCardProps {
   pin: IPins;
 }
@@ -12,7 +12,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
       className="w-full sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] 
                  h-auto mt-6 flex flex-col"
     >
-      <img
+      <Image
         src={pin.image}
         alt={pin.description || "Pin image"}
         className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] 

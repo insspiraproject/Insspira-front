@@ -58,7 +58,7 @@ export default function Landing() {
       </div>
       <h3 className="text-white text-xl font-[montserrat] mt-4 mb-4">Share your world, inspire others</h3>
       <div className="flex items-center justify-center mb-2 ">
-        <button className="text-white font-bold py-4 px-6 rounded-full bg-[var(--morado)] hover:bg-[var(--rosa)] transition-colors">
+        <button className="text-white font-bold py-4 px-6 rounded-full bg-[var(--color-morado)] hover:bg-[var(--color-rosa)] transition-colors">
           Start explore
         </button>
       </div>
