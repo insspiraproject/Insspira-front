@@ -4,7 +4,7 @@ import React from "react";
 const Subscriptions = ()=> {
   return (
     
-    <div className="w-full min-h-screen flex justify-center items-center bg-[var(--violeta)] px-4 py-8 gap-8">
+    <div className="w-full min-h-screen flex justify-center items-center bg-[var(--color-violeta)] px-4 py-8 gap-8">
       <style jsx>{`
         @property --border-angle {
           syntax: "<angle>";
@@ -25,7 +25,7 @@ const Subscriptions = ()=> {
 
       <div className="relative w-80 p-[4px] rounded-2xl animate-border [background:conic-gradient(from_var(--border-angle),theme(colors.slate.600/.48)_80%,theme(colors.teal.500)_86%,theme(colors.cyan.300)_90%,theme(colors.teal.500)_94%,theme(colors.slate.600/.48))]">
         
-        <div className="bg-[var(--gris)] rounded-2xl shadow-md p-6 flex flex-col justify-between hover:scale-105 transition-transform ">
+        <div className="bg-[var(--color-gris)] rounded-2xl shadow-md p-6 flex flex-col justify-between hover:scale-105 transition-transform ">
           <h2 className="text-2xl font-bold mb-4 text-center">Monthly</h2>
           <p className="text-gray-600 mb-6 text-center">Pay month-to-month</p>
           <p className="text-3xl font-semibold mb-6 text-center">$10 / month</p>
@@ -33,7 +33,7 @@ const Subscriptions = ()=> {
             <li>✔ Access to all content</li>
             <li>✔ Some premium features</li>
           </ul>
-          <button className="w-full bg-[var(--morado)] text-white py-2 rounded-full hover:bg-[var(--rosa)] transition-colors">
+          <button className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors">
             Choose Monthly
           </button>
         </div>
@@ -49,7 +49,7 @@ const Subscriptions = ()=> {
         <li>✔ Access to all content</li>
         <li>✔ All premium features</li>
       </ul>
-      <button className="w-full bg-[var(--morado)] text-white py-2 rounded-full hover:bg-[var(--rosa)] transition-colors">
+      <button className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors">
         Choose Annual
       </button>
     </div>
