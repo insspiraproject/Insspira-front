@@ -11,8 +11,8 @@ module.exports = {
         crema: '#E0DBE5', 
         amarillo: '#F8E800',
         rosa: '#AC80C6',
-      }
-    },
+      },
   },
   plugins: [],
 } 
+}

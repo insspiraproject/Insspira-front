@@ -1,11 +1,16 @@
 /*src/app/globals.css*/
 @import "tailwindcss";
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
 
 
 /* Variables CSS */
+/* Agregue color- para que me funcionen las variables */
 :root {
-  --color-morado:   #5419E6;
-  --color-crema:    #E0DBE5;
-  --color-amarillo: #F8E800;
+  --color-violeta:   #1C163E;
+  --color-morado:    #743596;
+  --color-blanco: #D9D9D9;
+  --color-gris: #AAB1BF;
   --color-rosa:     #AC80C6;
 }
