@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${overlock.variable} ${dmSerif.variable} ${roboto.variable} antialiased`}>
           {children}
-          <Footer />
+          {/* <Footer /> */}
       </body>
     </html>
   );
