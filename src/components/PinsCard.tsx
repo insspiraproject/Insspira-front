@@ -7,10 +7,6 @@ interface PinsCardProps {
   pin: IPins | null | undefined;
 }
 
-const ensureSrc = (v?: string | null): string => {
-  return typeof v === "string" && v.trim().length > 0 ? v : "/architecture.jpg";
-};
-
 const ensureText = (v?: string | null, fallback = ""): string => {
   return typeof v === "string" ? v : fallback;
 };
