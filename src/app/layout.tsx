@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Overlock, DM_Serif_Display, Roboto, Lora, Montserrat } from "next/font/google"; 
-import Footer from "@/components/Footer";
+// import Footer from "@/components/Footer";
 
 const overlock = Overlock({ weight: "400", subsets: ["latin"], variable: "--font-overlock" });
 const dmSerif = DM_Serif_Display({ weight: "400", subsets: ["latin"], variable: "--font-dm-serif" });
@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="google" content="notranslate" />
       </head>
-      <body className={`${overlock.variable} ${dmSerif.variable} ${roboto.variable} antialiased`}>
+      <body className={`${overlock.variable} ${dmSerif.variable} ${roboto.variable} ${lora.variable} ${montserrat.variable} antialiased`}>
           {children}
           
       </body>
