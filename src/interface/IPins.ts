@@ -1,10 +1,10 @@
 export interface IPins {
-    id: number,
-    image: string,
-    description?: string,
-    likesCount: number,
-    commentsCount: number,
-    views: number,
-    user: string
-    
-}
+    id: number;
+    image?: string | null;           // ← opcional / null
+    description?: string | null;
+    likesCount: number;
+    commentsCount: number;
+    views: number;
+    user: string;
+  }
+  

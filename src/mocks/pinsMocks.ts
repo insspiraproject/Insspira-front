@@ -1,12 +1,12 @@
 export interface IPinsMocks {
-    id: number,
-    image: string,
-    description?: string,
-    likesCount: number,
-    commentsCount: number,
-    views: number,
-    user: string
-}
+    id: number;
+    image?: string | null;           // ← idem
+    description?: string | null;
+    likesCount: number;
+    commentsCount: number;
+    views: number;
+    user: string;
+  }
 
 const pinsMock: IPinsMocks[] = [
     {
