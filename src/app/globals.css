@@ -1,5 +1,8 @@
 /*src/app/globals.css*/
 @import "tailwindcss";
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
 
 
 /* Variables CSS */

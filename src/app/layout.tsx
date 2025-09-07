@@ -1,12 +1,14 @@
 // src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
-import { Overlock, DM_Serif_Display, Roboto } from "next/font/google"; 
+import { Overlock, DM_Serif_Display, Roboto, Lora, Montserrat } from "next/font/google"; 
 import Footer from "@/components/Footer";
 
 const overlock = Overlock({ weight: "400", subsets: ["latin"], variable: "--font-overlock" });
 const dmSerif = DM_Serif_Display({ weight: "400", subsets: ["latin"], variable: "--font-dm-serif" });
 const roboto = Roboto({ weight: "400", subsets: ["latin"], variable: "--font-roboto" });
+const lora = Lora({ weight: "400", subsets: ["latin"], variable: "--font-lora", style: "italic" });
+const montserrat = Montserrat({ weight: "400", subsets: ["latin"], variable: "--font-montserrat" });
 
 export const metadata: Metadata = {
   title: "Insspira",
@@ -22,7 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${overlock.variable} ${dmSerif.variable} ${roboto.variable} antialiased`}>
           {children}
-          <Footer />
+          
       </body>
     </html>
   );
