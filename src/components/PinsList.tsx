@@ -1,4 +1,7 @@
-import pinsMocks from "@/mocks/pinsMocks";
+'use client'
+
+import { useEffect, useState } from "react";
+import getAllPins from "@/helpers/pins.helpers";
 import PinsCard from "@/components/PinsCard";
 import type { IPins } from "@/interfaces/IPins";
 
@@ -11,11 +14,21 @@ const normalizePin = (pin: IPins): IPins => ({
 });
 
 const PinsList = () => {
+  const [pins, setPins] = useState<IPins[]>([]);
+
+  useEffect(() => {
+    const fetchPins = async () => {
+      const data = await getAllPins();
+      setPins(data || []);
+    };
+    fetchPins();
+  }, []);
+
   return (
     <div className="flex justify-center h-auto bg-gradient-to-tr to-slate-300 from-slate-500 py-3 px-4">
       <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-8 lg:gap-10">
-        {pinsMocks.map((pin) => (
-          <PinsCard key={pin.id} pin={normalizePin(pin as IPins)} />
+        {pins.map((pin) => (
+          <PinsCard key={pin.id} pin={normalizePin(pin)} />
         ))}
       </div>
     </div>
