@@ -25,7 +25,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
       <SafeImage
         width={500}
         height={500}
-        src={pin.image}                   // ← puede venir vacío; SafeImage lo blinda
+        src={pin.image}
         alt={isNonEmpty(pin.description) ? pin.description : null}
         className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] 
                    object-cover opacity-80 rounded-t-xl 
