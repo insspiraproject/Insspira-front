@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import getAllPins from "@/helpers/pins.helpers";
+import getAllPins from "@/services/pins/pins.services";
 import PinsCard from "@/components/PinsCard";
 import type { IPins } from "@/interfaces/IPins";
 
