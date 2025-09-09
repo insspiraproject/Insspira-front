@@ -1,198 +1,160 @@
-"use client"
+"use client";
 
-//importaciones
-import { useFormik } from "formik"
+import { useFormik } from "formik";
+import { useRouter } from "next/navigation";
 import {
   RegisterFormValues,
   RegisterInitialValues,
   RegisterValidationSchema,
-} from "@/validators/RegisterSchema"
+} from "@/validators/RegisterSchema";
+import { RegisterUser } from "@/services/authservice";
 
-//logica formulario
 export default function RegisterComponent() {
+  const router = useRouter();
+
   const formik = useFormik<RegisterFormValues>({
     initialValues: RegisterInitialValues,
     validationSchema: RegisterValidationSchema,
-    onSubmit: (values, { setSubmitting }) => {
-      console.log("Register submitted with values:", values)
-      setTimeout(() => setSubmitting(false), 500)
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const res = await RegisterUser(values);
+        if (!res) return; // el servicio ya avisa con toast
+
+        // Si tu backend devuelve token/usuario, puedes guardarlos aquí:
+        if (res.token) localStorage.setItem("token", res.token);
+        if (res.user) localStorage.setItem("user", JSON.stringify(res.user));
+
+        router.push("/home"); // o "/dashboard"
+      } catch (err) {
+        console.error("❌ Error en registro:", err);
+      } finally {
+        setSubmitting(false);
+      }
     },
-  })
+  });
 
+  const inputBase =
+    "w-full h-12 px-4 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/40 transition";
+  const labelBase = "block text-sm font-medium text-white";
+  const errorText = "mt-1 text-[13px] text-red-300";
 
- //html formulario
   return (
-    <div
-      className="min-h-screen w-full flex items-center justify-center relative overflow-hidden 
-      bg-[radial-gradient(60%40%_at_50%-10%,#1b2b44_0%,#0e1a2a_100%)] text-slate-100"
-    >
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 
-        bg-[repeating-linear-gradient(180deg,transparent,transparent_120px,#2d215c_120px,#2d215c_220px)] 
-        opacity-60"
-      />
+    <main className="min-h-[calc(100dvh-0px)] w-full flex items-center justify-center px-4 py-10 bg-[linear-gradient(to_right,rgba(28,22,62,.9)_0%,rgba(116,53,150,.85)_40%,rgba(116,53,150,.85)_60%,rgba(28,22,62,.9)_100%)]">
+      <section className="w-full max-w-md">
+        <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,.35)] p-6 sm:p-8">
+          <header className="text-center mb-6">
+            <h1 className="text-2xl sm:text-3xl font-semibold text-white">Crear cuenta</h1>
+            <p className="mt-1 text-sm text-white/80">Únete a Insspira</p>
+          </header>
 
-      <div
-        className="relative w-[866px] max-w-[92vw] h-[864px] max-h-[92vh] 
-        rounded-[15px] bg-[#121E32] shadow-[2px_2px_33px_10px_rgba(74,74,74,0.99)] 
-        overflow-hidden grid grid-cols-[1fr_minmax(300px,351px)] 
-        transform-gpu origin-center 
-        xl:scale-100 lg:scale-[0.95] md:scale-[0.9] sm:scale-[0.85]"
-      >
-        <div className="h-full p-8 md:p-10 overflow-y-auto">
-          <h1
-            className="w-[320px] h-[104px] mx-auto text-center 
-            text-[34px] leading-[52px] font-semibold text-slate-200 mb-6"
-          >
-            Crear cuenta
-          </h1>
-
-          <form onSubmit={formik.handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="name" className="block text-base font-semibold">
-                Nombre y apellido:
-              </label>
+          <form onSubmit={formik.handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className={labelBase}>Nombre y apellido</label>
               <input
                 id="name"
                 name="name"
                 type="text"
-                required
+                autoComplete="name"
                 value={formik.values.name}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                className="w-full h-12 rounded-lg px-4 bg-[#DEDEDE] 
-                text-black placeholder-black/60 outline-none 
-                ring-2 ring-transparent focus:ring-indigo-400"
                 placeholder="Nombre y apellido"
+                className={inputBase}
               />
               {formik.touched.name && formik.errors.name && (
-                <p className="text-red-400 text-sm">{formik.errors.name}</p>
+                <p className={errorText}>{formik.errors.name}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="username" className="block text-base font-semibold">
-                Nombre de usuario:
-              </label>
+            <div>
+              <label htmlFor="username" className={labelBase}>Nombre de usuario</label>
               <input
                 id="username"
                 name="username"
                 type="text"
-                required
+                autoComplete="username"
                 value={formik.values.username}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                className="w-full h-12 rounded-lg px-4 bg-[#DEDEDE] 
-                text-black placeholder-black/60 outline-none 
-                ring-2 ring-transparent focus:ring-indigo-400"
                 placeholder="Tu nombre de usuario"
+                className={inputBase}
               />
               {formik.touched.username && formik.errors.username && (
-                <p className="text-red-400 text-sm">{formik.errors.username}</p>
+                <p className={errorText}>{formik.errors.username}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="email" className="block text-base font-semibold">
-                Email:
-              </label>
+            <div>
+              <label htmlFor="email" className={labelBase}>Email</label>
               <input
                 id="email"
                 name="email"
                 type="email"
-                required
+                autoComplete="email"
                 value={formik.values.email}
-                onChange={formik.handleChange}
+                onChange={(e) => formik.setFieldValue("email", e.target.value.trimStart())}
                 onBlur={formik.handleBlur}
-                className="w-full h-12 rounded-lg px-4 bg-[#DEDEDE] 
-                text-black placeholder-black/60 outline-none 
-                ring-2 ring-transparent focus:ring-indigo-400"
                 placeholder="tu@correo.com"
+                className={inputBase}
               />
               {formik.touched.email && formik.errors.email && (
-                <p className="text-red-400 text-sm">{formik.errors.email}</p>
+                <p className={errorText}>{formik.errors.email}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="password" className="block text-base font-semibold">
-                Contraseña:
-              </label>
+            <div>
+              <label htmlFor="password" className={labelBase}>Contraseña</label>
               <input
                 id="password"
                 name="password"
                 type="password"
-                required
+                autoComplete="new-password"
                 value={formik.values.password}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                className="w-full h-12 rounded-lg px-4 bg-[#DEDEDE] 
-                text-black placeholder-black/60 outline-none 
-                ring-2 ring-transparent focus:ring-indigo-400"
                 placeholder="••••••••"
+                className={inputBase}
               />
               {formik.touched.password && formik.errors.password && (
-                <p className="text-red-400 text-sm">{formik.errors.password}</p>
+                <p className={errorText}>{formik.errors.password}</p>
               )}
             </div>
 
-            <div className="space-y-2">
-              <label
-                htmlFor="confirmPassword"
-                className="block text-base font-semibold"
-              >
-                Confirma tu contraseña:
-              </label>
+            <div>
+              <label htmlFor="confirmPassword" className={labelBase}>Confirma tu contraseña</label>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
-                required
+                autoComplete="new-password"
                 value={formik.values.confirmPassword}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                className="w-full h-12 rounded-lg px-4 bg-[#DEDEDE] 
-                text-black placeholder-black/60 outline-none 
-                ring-2 ring-transparent focus:ring-indigo-400"
                 placeholder="••••••••"
+                className={inputBase}
               />
-              {formik.touched.confirmPassword &&
-                formik.errors.confirmPassword && (
-                  <p className="text-red-400 text-sm">
-                    {formik.errors.confirmPassword}
-                  </p>
-                )}
+              {formik.touched.confirmPassword && formik.errors.confirmPassword && (
+                <p className={errorText}>{formik.errors.confirmPassword}</p>
+              )}
             </div>
 
             <button
               type="submit"
               disabled={!formik.isValid || formik.isSubmitting}
-              className="mt-12 w-40 h-12 rounded-lg font-semibold 
-              bg-[var(--morado)] text-white shadow-[inset_6px_6px_24px_rgba(0,0,0,0.28)] 
-              hover:brightness-110 active:scale-[0.99] 
-              disabled:opacity-50 disabled:cursor-not-allowed 
-              transition mx-auto block"
+              className="mt-2 w-full h-12 rounded-xl font-semibold bg-[var(--color-morado)] text-white border border-white/10 shadow disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-95 active:scale-[0.99] transition"
             >
               {formik.isSubmitting ? "Creando..." : "Crear cuenta"}
             </button>
           </form>
         </div>
 
-        <div
-          className="h-full p-8 md:p-10 bg-[#121E32] border-l-[2px] border-l-[#424040] 
-          rounded-tr-[15px] rounded-br-[15px] box-border"
-        >
-          <h2 className="text-[28px] font-medium text-slate-200 text-center mb-8">
-            También podés registrarte con:
-          </h2>
-
-          <div
-            className="mx-auto w-[260px] h-[360px] rounded-xl bg-white 
-            shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
-          />
-        </div>
-      </div>
-    </div>
-  )
+        <p className="mt-4 text-center text-sm text-white/80">
+          ¿Ya tienes cuenta?{" "}
+          <a href="/login" className="underline underline-offset-4 decoration-white/40 hover:decoration-white">
+            Inicia sesión
+          </a>
+        </p>
+      </section>
+    </main>
+  );
 }
