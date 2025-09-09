@@ -32,11 +32,11 @@ export default function UsersTable() {
   return (
     <section className="rounded-2xl bg-white/5 border border-white/10 p-4 text-white">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold">Usuarios</h3>
+        <h3 className="font-semibold">Users</h3>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Buscar..."
+          placeholder="Search..."
           className="px-3 py-2 rounded-lg bg-white/10 border border-white/10 outline-none"
         />
       </div>
@@ -45,12 +45,12 @@ export default function UsersTable() {
         <table className="w-full text-sm">
           <thead className="text-left border-b border-white/10">
             <tr className="[&>th]:py-2">
-              <th>Usuario</th>
-              <th>Correo</th>
+              <th>User</th>
+              <th>Email</th>
               <th>Plan</th>
               <th>Posts</th>
-              <th>Estado</th>
-              <th>Acción</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody className="[&>tr>td]:py-2">
@@ -78,7 +78,7 @@ export default function UsersTable() {
                     onClick={() => toggleStatus(u.id)}
                     className="px-3 py-1.5 rounded-lg border border-white/20 hover:border-white"
                   >
-                    {u.status === "active" ? "Suspender" : "Reactivar"}
+                    {u.status === "active" ? "Suspend" : "Reactivate"}
                   </button>
                 </td>
               </tr>
@@ -86,7 +86,7 @@ export default function UsersTable() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-6 text-center opacity-70">
-                  Sin resultados
+                  No results
                 </td>
               </tr>
             )}

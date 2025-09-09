@@ -7,7 +7,8 @@ import { LoginUser } from "@/services/authservice";
 import { FcGoogle } from "react-icons/fc";
 import { FiArrowLeft } from "react-icons/fi";
 
-type LoginResponse = {
+
+ type LoginResponse = {
   token?: string;
   user?: { id: string; name: string; email: string; role?: "admin" | "user" };
 };
@@ -28,7 +29,7 @@ export default function FormLogin() {
 
         router.push(res.user?.role === "admin" ? "/admin" : "/home");
       } catch (err) {
-        console.error("❌ Error en login:", err);
+        console.error("❌ Login error:", err);
       } finally {
         setSubmitting(false);
       }
@@ -43,22 +44,22 @@ export default function FormLogin() {
   return (
     <main className="min-h-[calc(100dvh-0px)] w-full flex items-center justify-center px-4 py-10 bg-[linear-gradient(to_right,rgba(28,22,62,.9)_0%,rgba(116,53,150,.85)_40%,rgba(116,53,150,.85)_60%,rgba(28,22,62,.9)_100%)]">
       <section className="w-full max-w-md">
-        {/* Botón Volver */}
+        {/* Back button */}
         <div className="mb-3">
           <button
             type="button"
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/20 text-white hover:border-white/40 text-sm"
           >
-            <FiArrowLeft /> Volver
+            <FiArrowLeft /> Back
           </button>
         </div>
 
         {/* Card */}
         <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,.35)] p-6 sm:p-8">
           <header className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-semibold text-white">Iniciar sesión</h1>
-            <p className="mt-1 text-sm text-white/80">Bienvenido de nuevo a Insspira</p>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-white">Log in</h1>
+            <p className="mt-1 text-sm text-white/80">Welcome back to Insspira</p>
           </header>
 
           <form onSubmit={formik.handleSubmit} className="space-y-4">
@@ -72,7 +73,7 @@ export default function FormLogin() {
                 value={formik.values.email}
                 onChange={(e) => formik.setFieldValue("email", e.target.value.trimStart())}
                 onBlur={formik.handleBlur}
-                placeholder="tu@correo.com"
+                placeholder="you@email.com"
                 className={inputBase}
                 aria-invalid={Boolean(formik.touched.email && formik.errors.email)}
               />
@@ -80,7 +81,7 @@ export default function FormLogin() {
             </div>
 
             <div>
-              <label htmlFor="password" className={labelBase}>Contraseña</label>
+              <label htmlFor="password" className={labelBase}>Password</label>
               <input
                 id="password"
                 name="password"
@@ -101,32 +102,32 @@ export default function FormLogin() {
               disabled={!formik.isValid || formik.isSubmitting}
               className="mt-2 w-full h-12 rounded-xl font-semibold bg-[var(--color-morado)] text-white border border-white/10 shadow disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-95 active:scale-[0.99] transition"
             >
-              {formik.isSubmitting ? "Ingresando..." : "Ingresar"}
+              {formik.isSubmitting ? "Logging in..." : "Log in"}
             </button>
 
             <div className="relative my-3">
               <div className="h-px bg-white/10" />
-              <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-transparent px-2 text-[11px] text-white/60">o</span>
+              <span className="absolute left-1/2 -translate-x-1/2 -top-3 bg-transparent px-2 text-[11px] text-white/60">or</span>
             </div>
 
             <button
               type="button"
               onClick={() => {
                 // window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`;
-                console.log("Login con Google");
+                console.log("Login with Google");
               }}
               className="w-full h-12 rounded-xl bg-white text-[var(--color-violeta)] font-medium border border-white/20 hover:opacity-95 active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
             >
               <FcGoogle className="text-xl" />
-              Iniciar sesión con Google
+              Log in with Google
             </button>
           </form>
         </div>
 
         <p className="mt-4 text-center text-sm text-white/80">
-          ¿No tienes cuenta?{" "}
+          Don’t have an account?{" "}
           <a href="/register" className="underline underline-offset-4 decoration-white/40 hover:decoration-white">
-            Regístrate
+            Sign up
           </a>
         </p>
       </section>

@@ -18,17 +18,15 @@ import {
 } from "react-icons/fi";
 
 export default function NavBar() {
-  const pathname = usePathname();          // <-- hooks SIEMPRE antes de returns
+  const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
-  // Ocultar en estas rutas (se decide DESPUÉS de llamar hooks)
   const HIDE_ROUTES = new Set(["/", "/login", "/register"]);
   if (HIDE_ROUTES.has(pathname)) return null;
 
   const logout = () => {
-    // TODO: integra tu logout real cuando tengas auth
     router.push("/login");
   };
 
@@ -45,14 +43,14 @@ export default function NavBar() {
           <div className="flex items-center gap-2">
             <Link
               href="/"
-              className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--color-blanco)] text-[var(--color-violeta)] font-bold text-[10px] sm:text-[11px]"
-              aria-label="Insspira - Inicio"
+              className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--color-blanco)] text-[var(--color-violeta)] font-[lora] text-[10px] sm:text-[11px]"
+              aria-label="Insspira - Home"
             >
               Logo
             </Link>
             <Link
               href="/"
-              className="text-base sm:text-xl md:text-2xl font-semibold text-[var(--color-blanco)]"
+              className="text-base sm:text-xl md:text-2xl font-[lora] text-[var(--color-blanco)]"
             >
               Insspira
             </Link>
@@ -64,37 +62,37 @@ export default function NavBar() {
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" />
               <input
                 type="text"
-                placeholder="Buscar inspiración..."
+                placeholder="Search for inspiration..."
                 className="w-full pl-10 pr-3 h-11 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/30"
               />
             </div>
           </div>
 
-          {/* Acciones derecha */}
+          {/* Right actions */}
           <div className="flex items-center gap-2">
-            {/* Toggle search móvil */}
+            {/* Toggle mobile search */}
             <button
               onClick={() => {
                 setMobileSearchOpen((v) => !v);
                 setMobileOpen(false);
               }}
               className="md:hidden p-2 rounded-lg border border-white/15 text-white hover:border-white/30"
-              aria-label="Buscar"
-              title="Buscar"
+              aria-label="Search"
+              title="Search"
             >
               <FiSearch />
             </button>
 
-            {/* Nav principal (desktop) */}
+            {/* Main nav (desktop) */}
             <nav className="hidden md:flex items-center gap-2">
-              <Link href="/" className={linkBtn}>
+              <Link href="/home" className={linkBtn}>
                 <span className="inline-flex items-center gap-1">
                   <FiHome /> Feed
                 </span>
               </Link>
               <Link href="/trending" className={linkBtn}>
                 <span className="inline-flex items-center gap-1">
-                  <FiTrendingUp /> Tendencias
+                  <FiTrendingUp /> Trending
                 </span>
               </Link>
               <Link href="/about" className={linkBtn}>
@@ -102,79 +100,79 @@ export default function NavBar() {
                   <FiInfo /> About
                 </span>
               </Link>
-              <Link href="/pricing" className={linkBtn}>
+              <Link href="/payments" className={linkBtn}>
                 <span className="inline-flex items-center gap-1">
-                  <FiZap /> Precios
+                  <FiZap /> Pricing
                 </span>
               </Link>
             </nav>
 
-            {/* CTAs (desktop) — por ahora TODAS visibles */}
+            {/* CTAs (desktop) — for now ALL visible */}
             <div className="hidden sm:flex items-center gap-2">
               <Link href="/dashboard" className={linkBtn}>
                 <span className="inline-flex items-center gap-1">
-                  <FiUser /> Mi dashboard
+                  <FiUser /> My Dashboard
                 </span>
               </Link>
-              <Link href="/admin" className={linkBtn}>
+              <Link href="/dashboard/admin" className={linkBtn}>
                 <span className="inline-flex items-center gap-1">
-                  <FiLayout /> Panel Admin
+                  <FiLayout /> Admin Panel
                 </span>
               </Link>
               <Link href="/login" className={linkBtn}>
-                Iniciar sesión
+                Log in
               </Link>
               <Link href="/register" className={primaryBtn}>
-                Registrarse
+                Sign up
               </Link>
               <button onClick={logout} className={primaryBtn}>
                 <span className="inline-flex items-center gap-1">
-                  <FiLogOut /> Cerrar sesión
+                  <FiLogOut /> Log out
                 </span>
               </button>
             </div>
 
-            {/* Hamburguesa */}
+            {/* Hamburger */}
             <button
               onClick={() => {
                 setMobileOpen((v) => !v);
                 setMobileSearchOpen(false);
               }}
               className="md:hidden p-2 rounded-lg border border-white/15 text-white hover:border-white/40"
-              aria-label="Menú"
-              title="Menú"
+              aria-label="Menu"
+              title="Menu"
             >
               {mobileOpen ? <FiX /> : <FiMenu />}
             </button>
           </div>
         </div>
 
-        {/* Search móvil */}
+        {/* Mobile search */}
         {mobileSearchOpen && (
           <div className="md:hidden px-3 sm:px-4 md:px-6 pb-3">
             <div className="relative">
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" />
               <input
                 type="text"
-                placeholder="Buscar inspiración..."
+                placeholder="Search for inspiration..."
                 className="w-full pl-10 pr-3 h-11 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/30"
               />
             </div>
           </div>
         )}
 
-        {/* Drawer móvil */}
+        {/* Mobile drawer */}
         {mobileOpen && (
           <div className="md:hidden px-3 sm:px-4 md:px-6 pb-3">
             <nav className="grid gap-2">
-              <Link href="/" onClick={() => setMobileOpen(false)} className={linkBtn}>
+              <Link href="/home" onClick={() => setMobileOpen(false)} className={linkBtn}>
                 <span className="inline-flex items-center gap-2">
                   <FiHome /> Feed
                 </span>
               </Link>
               <Link href="/trending" onClick={() => setMobileOpen(false)} className={linkBtn}>
                 <span className="inline-flex items-center gap-2">
-                  <FiTrendingUp /> Tendencias
+                  <FiTrendingUp /> Trending
                 </span>
               </Link>
               <Link href="/about" onClick={() => setMobileOpen(false)} className={linkBtn}>
@@ -182,26 +180,26 @@ export default function NavBar() {
                   <FiInfo /> About
                 </span>
               </Link>
-              <Link href="/pricing" onClick={() => setMobileOpen(false)} className={linkBtn}>
+              <Link href="/payments" onClick={() => setMobileOpen(false)} className={linkBtn}>
                 <span className="inline-flex items-center gap-2">
-                  <FiZap /> Precios
+                  <FiZap /> Pricing
                 </span>
               </Link>
               <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={linkBtn}>
                 <span className="inline-flex items-center gap-2">
-                  <FiUser /> Mi dashboard
+                  <FiUser /> My Dashboard
                 </span>
               </Link>
-              <Link href="/admin" onClick={() => setMobileOpen(false)} className={linkBtn}>
+              <Link href="/dashboard/admin" onClick={() => setMobileOpen(false)} className={linkBtn}>
                 <span className="inline-flex items-center gap-2">
-                  <FiLayout /> Panel Admin
+                  <FiLayout /> Admin Panel
                 </span>
               </Link>
               <Link href="/login" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                Iniciar sesión
+                Log in
               </Link>
               <Link href="/register" onClick={() => setMobileOpen(false)} className={primaryBtn}>
-                Registrarse
+                Sign up
               </Link>
               <button
                 onClick={() => {
@@ -211,7 +209,7 @@ export default function NavBar() {
                 className={primaryBtn}
               >
                 <span className="inline-flex items-center gap-2">
-                  <FiLogOut /> Cerrar sesión
+                  <FiLogOut /> Log out
                 </span>
               </button>
             </nav>

@@ -8,12 +8,12 @@ type Key = "overview" | "users" | "reports" | "subscriptions" | "payments" | "pl
 
 const items: { key: Key; label: string; icon: JSX.Element }[] = [
   { key: "overview", label: "Overview", icon: <FiHome /> },
-  { key: "users", label: "Usuarios", icon: <FiUsers /> },
-  { key: "reports", label: "Reportes", icon: <FiFlag /> },
-  { key: "subscriptions", label: "Suscripciones", icon: <FiBookmark /> },
-  { key: "payments", label: "Pagos", icon: <FiCreditCard /> },
-  { key: "plans", label: "Planes", icon: <FiLayers /> },
-  { key: "profile", label: "Perfil Admin", icon: <FiUser /> },
+  { key: "users", label: "Users", icon: <FiUsers /> },
+  { key: "reports", label: "Reports", icon: <FiFlag /> },
+  { key: "subscriptions", label: "Subscriptions", icon: <FiBookmark /> },
+  { key: "payments", label: "Payments", icon: <FiCreditCard /> },
+  { key: "plans", label: "Plans", icon: <FiLayers /> },
+  { key: "profile", label: "Admin Profile", icon: <FiUser /> },
 ];
 
 export type AdminTabKey = typeof items[number]["key"];

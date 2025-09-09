@@ -21,19 +21,19 @@ export default function OverviewCards() {
   return (
     <div className="grid md:grid-cols-4 gap-4">
       <div className={card}>
-        <div className="text-sm opacity-80">Usuarios</div>
+        <div className="text-sm opacity-80">Users</div>
         <div className="text-2xl font-semibold">{totalUsers}</div>
       </div>
       <div className={card}>
-        <div className="text-sm opacity-80">Suscripciones activas</div>
+        <div className="text-sm opacity-80">Active Subscriptions</div>
         <div className="text-2xl font-semibold">{activeSubs}</div>
       </div>
       <div className={card}>
-        <div className="text-sm opacity-80">Reportes abiertos</div>
+        <div className="text-sm opacity-80">Open Reports</div>
         <div className="text-2xl font-semibold">{openReports}</div>
       </div>
       <div className={card}>
-        <div className="text-sm opacity-80">Ingresos (USD)</div>
+        <div className="text-sm opacity-80">Revenue (USD)</div>
         <div className="text-2xl font-semibold">${revenue.toFixed(2)}</div>
       </div>
     </div>

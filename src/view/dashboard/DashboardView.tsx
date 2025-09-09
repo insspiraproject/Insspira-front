@@ -26,47 +26,47 @@ export default function DashboardView() {
     likes: currentUserLikedPosts.length,
   };
 
-  return (
-    <div className="mx-auto w-full max-w-6xl space-y-6">
-      <ProfileHeader
-        user={user}
-        onOpenSubscription={() => setShowSub(true)}
-        onOpenAvatarEdit={() => setShowAvatar(true)}
-        onOpenEditInfo={() => setShowEdit(true)} // <-- NUEVO
-      />
+ return (
+  <div className="mx-auto w-full max-w-6xl space-y-6">
+    <ProfileHeader
+      user={user}
+      onOpenSubscription={() => setShowSub(true)}
+      onOpenAvatarEdit={() => setShowAvatar(true)}
+      onOpenEditInfo={() => setShowEdit(true)} // <-- NEW
+    />
 
-      {/* --- Quitamos el formulario inline --- */}
-      {/* <ProfileEditForm value={user} onChange={(u) => setUser(u)} /> */}
+    {/* --- Removed inline form --- */}
+    {/* <ProfileEditForm value={user} onChange={(u) => setUser(u)} /> */}
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-white text-lg md:text-xl font-semibold">
-          {active === "posts" ? "Tus publicaciones" : "Tus Me gusta"}
-        </h2>
-        <Tabs active={active} onChange={setActive} counts={counts} />
-      </div>
-
-      <MasonryGrid items={active === "posts" ? currentUserPosts : currentUserLikedPosts} />
-
-      <SubscriptionModal
-        open={showSub}
-        onClose={() => setShowSub(false)}
-        subscription={user.subscription}
-        payments={user.payments}
-      />
-
-      <ImageEditModal
-        open={showAvatar}
-        onClose={() => setShowAvatar(false)}
-        currentUrl={user.avatar}
-        onSave={(url) => setUser((prev) => ({ ...prev, avatar: url }))}
-      />
-
-      <ProfileEditModal
-        open={showEdit}
-        onClose={() => setShowEdit(false)}
-        value={user}
-        onChange={(u) => setUser(u)}
-      />
+    <div className="flex items-center justify-between">
+      <h2 className="text-white text-lg md:text-xl font-semibold">
+        {active === "posts" ? "Your Posts" : "Your Likes"}
+      </h2>
+      <Tabs active={active} onChange={setActive} counts={counts} />
     </div>
-  );
+
+    <MasonryGrid items={active === "posts" ? currentUserPosts : currentUserLikedPosts} />
+
+    <SubscriptionModal
+      open={showSub}
+      onClose={() => setShowSub(false)}
+      subscription={user.subscription}
+      payments={user.payments}
+    />
+
+    <ImageEditModal
+      open={showAvatar}
+      onClose={() => setShowAvatar(false)}
+      currentUrl={user.avatar}
+      onSave={(url) => setUser((prev) => ({ ...prev, avatar: url }))}
+    />
+
+    <ProfileEditModal
+      open={showEdit}
+      onClose={() => setShowEdit(false)}
+      value={user}
+      onChange={(u) => setUser(u)}
+    />
+  </div>
+);
 }

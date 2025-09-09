@@ -11,13 +11,13 @@ export const LoginInitialValues: LoginFormValues = {
 };
 
 export const LoginValidationSchema = Yup.object({
-  email: Yup.string()
-    .transform((v) => (v ?? "").trim().toLowerCase())
-    .email("El email no es válido")
-    .required("El email es obligatorio"),
-  password: Yup.string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres")
-    .max(64, "La contraseña no puede superar 64 caracteres")
-    .matches(/^\S+$/, "No se permiten espacios en la contraseña")
-    .required("La contraseña es obligatoria"),
+email: Yup.string()
+  .transform((v) => (v ?? "").trim().toLowerCase())
+  .email("Invalid email")
+  .required("Email is required"),
+password: Yup.string()
+  .min(8, "Password must be at least 8 characters long")
+  .max(64, "Password cannot exceed 64 characters")
+  .matches(/^\S+$/, "Spaces are not allowed in the password")
+  .required("Password is required"),
 });

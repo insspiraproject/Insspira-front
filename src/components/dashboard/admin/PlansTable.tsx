@@ -33,7 +33,7 @@ export default function PlansTable() {
       name: "Plus",
       pricePerMonth: 9.99,
       currency: "USD",
-      features: ["Nueva característica"],
+      features: ["New feature"],
       isActive: true,
       createdAt: new Date().toISOString().slice(0, 10),
     };
@@ -44,19 +44,19 @@ export default function PlansTable() {
   return (
     <section className="rounded-2xl bg-white/5 border border-white/10 p-4 text-white">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold">Planes</h3>
+        <h3 className="font-semibold">Plans</h3>
         <div className="flex items-center gap-2">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar plan..."
+            placeholder="Search plan..."
             className="px-3 py-2 rounded-lg bg-white/10 border border-white/10 outline-none"
           />
           <button
             onClick={addPlan}
             className="px-3 py-2 rounded-lg bg-white text-[var(--color-violeta)]"
           >
-            Añadir plan
+            Add plan
           </button>
         </div>
       </div>
@@ -65,13 +65,13 @@ export default function PlansTable() {
         <table className="w-full text-sm">
           <thead className="text-left border-b border-white/10">
             <tr className="[&>th]:py-2">
-              <th>Nombre</th>
-              <th>Precio</th>
-              <th>Moneda</th>
-              <th>Características</th>
-              <th>Activo</th>
-              <th>Creado</th>
-              <th>Acciones</th>
+              <th>Name</th>
+              <th>Price</th>
+              <th>Currency</th>
+              <th>Features</th>
+              <th>Active</th>
+              <th>Created</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody className="[&>tr>td]:py-2">
@@ -83,20 +83,20 @@ export default function PlansTable() {
                 <td className="max-w-[360px]">
                   <div className="line-clamp-2">{p.features.join(", ")}</div>
                 </td>
-                <td>{p.isActive ? "Sí" : "No"}</td>
+                <td>{p.isActive ? "Yes" : "No"}</td>
                 <td>{new Date(p.createdAt).toLocaleDateString()}</td>
                 <td className="space-x-2">
                   <button
                     onClick={() => setEditing(p)}
                     className="px-2 py-1 rounded-lg border border-white/20 hover:border-white"
                   >
-                    Editar
+                    Edit
                   </button>
                   <button
                     onClick={() => toggleActive(p.id)}
                     className="px-2 py-1 rounded-lg border border-white/20 hover:border-white"
                   >
-                    {p.isActive ? "Desactivar" : "Activar"}
+                    {p.isActive ? "Desactivate" : "Activate"}
                   </button>
                 </td>
               </tr>
@@ -104,7 +104,7 @@ export default function PlansTable() {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-6 text-center opacity-70">
-                  Sin resultados
+                  No results
                 </td>
               </tr>
             )}

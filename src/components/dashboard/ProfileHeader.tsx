@@ -20,7 +20,7 @@ export default function ProfileHeader({
   return (
     <section className="w-full rounded-2xl bg-white/5 p-5 md:p-6 border border-white/10 shadow">
       <div className="flex items-center gap-4 md:gap-6">
-        {/* contenedor cuadrado + fill => círculo perfecto */}
+        {/* square container + fill => perfect circle */}
         <div className="relative group w-16 h-16 md:w-28 md:h-28">
           <Image
             src={u.avatar}
@@ -35,8 +35,8 @@ export default function ProfileHeader({
             className="absolute -bottom-1 -right-1 opacity-0 group-hover:opacity-100 transition
                        bg-[var(--color-morado)] text-white p-2 rounded-full border border-white/20 shadow
                        hover:scale-105 focus:opacity-100"
-            aria-label="Editar foto de perfil"
-            title="Editar foto"
+            aria-label="Edit profile picture"
+            title="Edit photo"
           >
             <FiEdit2 />
           </button>
@@ -51,13 +51,13 @@ export default function ProfileHeader({
                 onClick={onOpenEditInfo}
                 className="text-sm md:text-base px-3 py-1.5 rounded-lg border border-white/20 text-white hover:border-white"
               >
-                Editar información
+                Edit info
               </button>
               <button
                 onClick={onOpenSubscription}
                 className="text-sm md:text-base px-3 py-1.5 rounded-lg bg-[var(--color-morado)] text-white hover:opacity-90"
               >
-                Ver suscripción
+                View subscription
               </button>
             </div>
           </div>
@@ -73,11 +73,11 @@ export default function ProfileHeader({
             </div>
             <div className="flex items-center gap-2 text-[var(--color-blanco)]">
               <FiCalendar />
-              <span>Desde {new Date(u.joinDate).toLocaleDateString()}</span>
+              <span>Member since {new Date(u.joinDate).toLocaleDateString()}</span>
             </div>
             <div className="flex items-center gap-2 text-[var(--color-blanco)]">
               <span>
-                <strong>{u.postsCount}</strong> publicaciones
+                <strong>{u.postsCount}</strong> posts
               </span>
             </div>
           </div>

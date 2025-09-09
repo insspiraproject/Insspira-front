@@ -26,11 +26,11 @@ export default function PlanEditModal({
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
       <div className="w-full max-w-2xl rounded-2xl bg-[var(--color-violeta)] text-white border border-white/10 shadow-2xl">
         <div className="p-5 flex items-center justify-between border-b border-white/10">
-          <h2 className="text-lg font-semibold">Editar plan</h2>
+          <h2 className="text-lg font-semibold">Edit Plan</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-lg hover:bg-white/10"
-            aria-label="Cerrar"
+            aria-label="Close"
           >
             <FiX />
           </button>
@@ -38,7 +38,7 @@ export default function PlanEditModal({
 
         <div className="p-5 grid gap-4 md:grid-cols-2">
           <label className="text-sm">
-            Nombre
+            Name
             <select
               className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none"
               value={local.name}
@@ -54,7 +54,7 @@ export default function PlanEditModal({
           </label>
 
           <label className="text-sm">
-            Precio mensual
+            Monthly Price
             <input
               type="number"
               min={0}
@@ -68,7 +68,7 @@ export default function PlanEditModal({
           </label>
 
           <label className="text-sm">
-            Moneda
+            Currency
             <select
               className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none"
               value={local.currency}
@@ -85,7 +85,7 @@ export default function PlanEditModal({
           </label>
 
           <label className="text-sm md:col-span-2">
-            Características (separadas por coma)
+            Features (comma separated)
             <input
               className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none"
               value={local.features.join(", ")}
@@ -101,7 +101,7 @@ export default function PlanEditModal({
               checked={local.isActive}
               onChange={(e) => setLocal({ ...local, isActive: e.target.checked })}
             />
-            Activo
+            Active
           </label>
         </div>
 
@@ -110,13 +110,13 @@ export default function PlanEditModal({
             onClick={onClose}
             className="px-4 py-2 rounded-lg border border-white/20 hover:border-white"
           >
-            Cancelar
+            Cancel
           </button>
           <button
             onClick={() => onSave(local)}
             className="px-4 py-2 rounded-lg bg-white text-[var(--color-violeta)]"
           >
-            Guardar
+            Save
           </button>
         </div>
       </div>

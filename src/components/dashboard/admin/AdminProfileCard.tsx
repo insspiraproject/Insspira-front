@@ -19,7 +19,7 @@ export default function AdminProfileCard() {
         <div className="text-lg font-semibold">{a.name}</div>
         <div className="text-sm opacity-80">{a.email}</div>
         <div className="text-sm mt-1">
-          Rol: <span className="font-medium">{a.role}</span> · Desde{" "}
+          Role: <span className="font-medium">{a.role}</span> - Since{" "}
           {new Date(a.since).toLocaleDateString()}
         </div>
       </div>

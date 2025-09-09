@@ -10,7 +10,7 @@ export default function ProfileEditForm({
 }: {
   value: UserProfile;
   onChange: (next: UserProfile) => void;
-  onSaved?: () => void; // <-- NUEVO
+  onSaved?: () => void; // <-- NEW
 }) {
   const [form, setForm] = useState({
     name: value.name,
@@ -24,15 +24,15 @@ export default function ProfileEditForm({
 
   const save = () => {
     onChange({ ...value, ...form });
-    onSaved?.(); // <-- cierra el modal si te pasaron callback
+    onSaved?.();
   };
 
   return (
     <section className="rounded-2xl bg-white/5 p-5 border border-white/10 text-white">
-      <h3 className="text-lg font-semibold mb-3">Actualizar información</h3>
+      <h3 className="text-lg font-semibold mb-3">Update Information</h3>
       <div className="grid md:grid-cols-2 gap-4">
         <label className="text-sm">
-          Nombre
+          Name
           <input
             className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none"
             value={form.name}
@@ -40,7 +40,7 @@ export default function ProfileEditForm({
           />
         </label>
         <label className="text-sm">
-          Usuario
+          Username
           <input
             className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none"
             value={form.username}
@@ -48,7 +48,7 @@ export default function ProfileEditForm({
           />
         </label>
         <label className="text-sm md:col-span-2">
-          Correo
+          Email
           <input
             type="email"
             className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none"
@@ -79,13 +79,13 @@ export default function ProfileEditForm({
           }
           className="px-4 py-2 rounded-lg border border-white/20 hover:border-white"
         >
-          Deshacer
+          Undo
         </button>
         <button
           onClick={save}
           className="px-4 py-2 rounded-lg bg-white text-[var(--color-violeta)]"
         >
-          Guardar cambios
+          Save Changes
         </button>
       </div>
     </section>

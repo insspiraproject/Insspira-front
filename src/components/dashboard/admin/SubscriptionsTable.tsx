@@ -11,17 +11,17 @@ export default function SubscriptionsTable() {
 
   return (
     <section className="rounded-2xl bg-white/5 border border-white/10 p-4 text-white">
-      <h3 className="font-semibold mb-3">Suscripciones</h3>
+      <h3 className="font-semibold mb-3">Subscriptions</h3>
       <div className="overflow-auto">
         <table className="w-full text-sm">
           <thead className="text-left border-b border-white/10">
             <tr className="[&>th]:py-2">
-              <th>Usuario</th>
+              <th>User</th>
               <th>Plan</th>
-              <th>Estado</th>
-              <th>Inicio</th>
-              <th>Renueva</th>
-              <th>Precio</th>
+              <th>Status</th>
+              <th>Start</th>
+              <th>Renews</th>
+              <th>Price</th>
             </tr>
           </thead>
           <tbody className="[&>tr>td]:py-2">
@@ -36,7 +36,7 @@ export default function SubscriptionsTable() {
                 <td>{new Date(s.startedAt).toLocaleDateString()}</td>
                 <td>{s.renewsAt ? new Date(s.renewsAt).toLocaleDateString() : "-"}</td>
                 <td>
-                  {s.pricePerMonth} {s.currency}/mes
+                  {s.pricePerMonth} {s.currency}/month
                 </td>
               </tr>
             ))}

@@ -25,13 +25,13 @@ export default function Tabs({
         className={`${btn} ${active === "posts" ? activeCls : inactiveCls}`}
         onClick={() => onChange("posts")}
       >
-        Publicaciones ({counts.posts})
+        Posts ({counts.posts})
       </button>
       <button
         className={`${btn} ${active === "likes" ? activeCls : inactiveCls}`}
         onClick={() => onChange("likes")}
       >
-        Me gusta ({counts.likes})
+        Likes ({counts.likes})
       </button>
     </div>
   );

@@ -1,6 +1,6 @@
 import * as Yup from "yup";
 
-// Interface para el formulario de registro
+// Interface for the registration form
 export interface RegisterFormValues {
   name: string;
   username: string;
@@ -9,7 +9,7 @@ export interface RegisterFormValues {
   confirmPassword: string;
 }
 
-// Valores iniciales
+// Initial values
 export const RegisterInitialValues: RegisterFormValues = {
   name: "",
   username: "",
@@ -30,46 +30,46 @@ const RESERVED_USERNAMES = [
   "contact",
 ];
 
-// Esquema de validación
+// Validation schema
 export const RegisterValidationSchema = Yup.object({
   name: Yup.string()
     .transform((v) => (v ?? "").trim().replace(/\s+/g, " "))
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(60, "El nombre no puede superar 60 caracteres")
-    // Permite letras unicode + espacios, apóstrofos y guiones (José Luis, O’Connor, Ana-María)
-    .matches(/^\p{L}+(?:[ '\-]\p{L}+)*$/u, "El nombre solo puede contener letras y espacios")
-    .required("El nombre es obligatorio"),
+    .min(2, "Name must be at least 2 characters long")
+    .max(60, "Name cannot exceed 60 characters")
+    // Allows unicode letters + spaces, apostrophes and hyphens (José Luis, O’Connor, Ana-María)
+    .matches(/^\p{L}+(?:[ '\-]\p{L}+)*$/u, "Name can only contain letters and spaces")
+    .required("Name is required"),
 
   username: Yup.string()
     .transform((v) => (v ?? "").trim().toLowerCase())
-    .min(4, "El nombre de usuario debe tener al menos 4 caracteres")
-    .max(20, "El nombre de usuario no puede superar 20 caracteres")
-    // Debe empezar y terminar en alfanumérico, puede tener _ en medio, sin __ consecutivos, sin espacios
+    .min(4, "Username must be at least 4 characters long")
+    .max(20, "Username cannot exceed 20 characters")
+    // Must start and end with alphanumeric, can contain _ in the middle, no consecutive __, no spaces
     .matches(
       /^(?!.*__)[a-z0-9](?:[a-z0-9_]{2,18})[a-z0-9]$/,
-      "Solo letras minúsculas, números y guiones bajos; sin '__' consecutivos, ni empezar/terminar con _"
+      "Only lowercase letters, numbers, and underscores; no consecutive '__', cannot start or end with _"
     )
-    .notOneOf(RESERVED_USERNAMES, "Ese nombre de usuario está reservado")
-    .required("El nombre de usuario es obligatorio"),
+    .notOneOf(RESERVED_USERNAMES, "This username is reserved")
+    .required("Username is required"),
 
   email: Yup.string()
     .transform((v) => (v ?? "").trim().toLowerCase())
-    .email("Dirección de email inválida")
-    .max(254, "El email es demasiado largo")
-    .required("El email es obligatorio"),
+    .email("Invalid email address")
+    .max(254, "Email is too long")
+    .required("Email is required"),
 
   password: Yup.string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres")
-    .max(64, "La contraseña no puede superar 64 caracteres")
-    .matches(/[A-Z]/, "Debe contener al menos una mayúscula (A-Z)")
-    .matches(/[a-z]/, "Debe contener al menos una minúscula (a-z)")
-    .matches(/\d/, "Debe contener al menos un número (0-9)")
-    .matches(/[^\w\s]/, "Debe contener al menos un carácter especial")
-    .matches(/^\S+$/, "No se permiten espacios en la contraseña")
-    // No contener nombre/username/prefijo del email
+    .min(8, "Password must be at least 8 characters long")
+    .max(64, "Password cannot exceed 64 characters")
+    .matches(/[A-Z]/, "Must contain at least one uppercase letter (A-Z)")
+    .matches(/[a-z]/, "Must contain at least one lowercase letter (a-z)")
+    .matches(/\d/, "Must contain at least one number (0-9)")
+    .matches(/[^\w\s]/, "Must contain at least one special character")
+    .matches(/^\S+$/, "Spaces are not allowed in the password")
+    // Should not contain name/username/email prefix
     .test(
       "no-personal-data",
-      "La contraseña no debe contener tu nombre, usuario o prefijo de email",
+      "Password must not contain your name, username, or email prefix",
       function (value) {
         if (!value) return false;
         const v = value.toLowerCase();
@@ -83,9 +83,9 @@ export const RegisterValidationSchema = Yup.object({
         );
       }
     )
-    .required("La contraseña es obligatoria"),
+    .required("Password is required"),
 
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Las contraseñas deben coincidir")
-    .required("Confirmar contraseña es obligatorio"),
+    .oneOf([Yup.ref("password")], "Passwords must match")
+    .required("Confirm password is required"),
 });

@@ -14,17 +14,17 @@ export default function PaymentsTable() {
 
   return (
     <section className="rounded-2xl bg-white/5 border border-white/10 p-4 text-white">
-      <h3 className="font-semibold mb-3">Pagos</h3>
+      <h3 className="font-semibold mb-3">Payments</h3>
       <div className="overflow-auto">
         <table className="w-full text-sm">
           <thead className="text-left border-b border-white/10">
             <tr className="[&>th]:py-2">
-              <th>Fecha</th>
-              <th>Usuario</th>
-              <th>Detalle</th>
-              <th>Método</th>
-              <th>Estado</th>
-              <th>Monto</th>
+              <th>Date</th>
+              <th>User</th>
+              <th>Details</th>
+              <th>Method</th>
+              <th>Status</th>
+              <th>Amount</th>
             </tr>
           </thead>
           <tbody className="[&>tr>td]:py-2">
@@ -46,7 +46,7 @@ export default function PaymentsTable() {
             {rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="py-6 text-center opacity-70">
-                  No hay pagos
+                  No payments
                 </td>
               </tr>
             )}

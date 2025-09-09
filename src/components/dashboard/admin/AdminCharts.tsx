@@ -17,7 +17,7 @@ export default function AdminCharts() {
         const key = p.date.slice(0, 7);
         map.set(key, (map.get(key) ?? 0) + p.amount);
       });
-    // último 6 meses (simple)
+    // last 6 months (simple)
     const months = Array.from(map.keys()).sort().slice(-6);
     return {
       categories: months,
@@ -58,7 +58,7 @@ export default function AdminCharts() {
     <section className="grid lg:grid-cols-2 gap-6 text-white">
       {/* Revenue area */}
       <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-        <div className="mb-2 font-semibold">Ingresos últimos meses (USD)</div>
+        <div className="mb-2 font-semibold">Revenue Last Months (USD)</div>
         <ReactECharts
           option={{
             grid: { left: 28, right: 16, top: 24, bottom: 24 },
@@ -80,7 +80,7 @@ export default function AdminCharts() {
 
       {/* Plan distribution */}
       <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-        <div className="mb-2 font-semibold">Distribución de planes</div>
+        <div className="mb-2 font-semibold">Plan Distribution</div>
         <ReactECharts
           option={{
             tooltip: { trigger: "item" },
@@ -102,7 +102,7 @@ export default function AdminCharts() {
 
       {/* Reports by reason */}
       <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-        <div className="mb-2 font-semibold">Reportes por motivo</div>
+        <div className="mb-2 font-semibold">Reports by Reason</div>
         <ReactECharts
           option={{
             grid: { left: 28, right: 16, top: 24, bottom: 24 },
@@ -121,9 +121,9 @@ export default function AdminCharts() {
         />
       </div>
 
-      {/* Nuevos usuarios */}
+      {/* New users */}
       <div className="rounded-2xl bg-white/5 border border-white/10 p-4">
-        <div className="mb-2 font-semibold">Altas de usuarios</div>
+        <div className="mb-2 font-semibold">New Users</div>
         <ReactECharts
           option={{
             grid: { left: 28, right: 16, top: 24, bottom: 24 },
