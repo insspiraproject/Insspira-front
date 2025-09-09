@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import {Pagination, Autoplay, EffectCoverflow } from "swiper/modules";
 import Image from "next/image";
 import {images} from "@/utils/images";
-import Aurora from "../others/Aurora";
+import Aurora from "./Aurora";
 
 export default function Landing() {
     return (

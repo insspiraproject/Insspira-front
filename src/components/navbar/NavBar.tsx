@@ -98,7 +98,7 @@ export default function NavBar() {
             {/* Nav principal desktop (siempre) */}
             <nav className="hidden md:flex items-center gap-2">
               <Link
-                href="/"
+                href="/home"
                 className="px-3 py-2 rounded-xl border border-white/15 text-white hover:border-white/40 text-sm"
               >
                 <span className="inline-flex items-center gap-1">
