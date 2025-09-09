@@ -1,4 +1,4 @@
-import PinsList from "@/components/PinsList";
+import PinsList from "@/components/pins/PinsList";
 
 const Home = () => {
     return(
