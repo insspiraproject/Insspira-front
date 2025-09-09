@@ -1,9 +1,16 @@
-// src/components/Footer.tsx
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FaFacebook, FaInstagram, FaTwitter, FaWhatsapp } from "react-icons/fa";
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  // ❗ No mostrar el footer en la página principal
+  if (pathname === "/") return null;
+
   return (
     <footer className="w-full bg-[linear-gradient(to_right,#1C163E_0%,#743596_40%,#743596_60%,#1C163E_100%)] text-[var(--color-blanco)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -26,88 +33,40 @@ export default function Footer() {
 
             {/* Redes sociales */}
             <div className="mt-6 flex space-x-4">
-              <a
-                href="#"
-                className="transition-colors text-[var(--color-blanco)] hover:text-[var(--color-rosa)]"
-                aria-label="Facebook"
-              >
+              <a href="#" className="transition-colors hover:text-[var(--color-rosa)]" aria-label="Facebook">
                 <FaFacebook size={20} />
               </a>
-              <a
-                href="#"
-                className="transition-colors text-[var(--color-blanco)] hover:text-[var(--color-rosa)]"
-                aria-label="Instagram"
-              >
+              <a href="#" className="transition-colors hover:text-[var(--color-rosa)]" aria-label="Instagram">
                 <FaInstagram size={20} />
               </a>
-              <a
-                href="#"
-                className="transition-colors text-[var(--color-blanco)] hover:text-[var(--color-rosa)]"
-                aria-label="Twitter"
-              >
+              <a href="#" className="transition-colors hover:text-[var(--color-rosa)]" aria-label="Twitter">
                 <FaTwitter size={20} />
               </a>
-              <a
-                href="#"
-                className="transition-colors text-[var(--color-blanco)] hover:text-[var(--color-rosa)]"
-                aria-label="WhatsApp"
-              >
+              <a href="#" className="transition-colors hover:text-[var(--color-rosa)]" aria-label="WhatsApp">
                 <FaWhatsapp size={20} />
               </a>
             </div>
           </div>
 
-          {/* Sección Nosotros */}
+          {/* Nosotros */}
           <div className="flex flex-col items-center md:items-start">
             <h3 className="mb-4 text-lg font-bold text-[var(--color-rosa)]">Nosotros</h3>
             <ul className="space-y-3 text-center md:text-left">
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Nuestra historia
-                </a>
-              </li>
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Equipo
-                </a>
-              </li>
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Trabaja con nosotros
-                </a>
-              </li>
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Sostenibilidad
-                </a>
-              </li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Nuestra historia</a></li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Equipo</a></li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Trabaja con nosotros</a></li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Sostenibilidad</a></li>
             </ul>
           </div>
 
-          {/* Información útil */}
+          {/* Info útil */}
           <div className="flex flex-col items-center md:items-start">
             <h3 className="mb-4 text-lg font-bold text-[var(--color-rosa)]">Información útil</h3>
             <ul className="space-y-3 text-center md:text-left">
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Guía de tallas
-                </a>
-              </li>
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Política de envíos
-                </a>
-              </li>
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Devoluciones
-                </a>
-              </li>
-              <li>
-                <a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors">
-                  Blog
-                </a>
-              </li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Guía de tallas</a></li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Política de envíos</a></li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Devoluciones</a></li>
+              <li><a href="#" className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline">Blog</a></li>
             </ul>
           </div>
 
@@ -117,19 +76,13 @@ export default function Footer() {
             <ul className="space-y-3 text-center md:text-left">
               <li className="flex items-center justify-center md:justify-start gap-2">
                 <span className="opacity-90">Email:</span>
-                <a
-                  href="mailto:fabianromerolu@gmail.com"
-                  className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors"
-                >
+                <a href="mailto:fabianromerolu@gmail.com" className="opacity-90 hover:text-[var(--color-rosa)] hover:underline">
                   fabianromerolu@gmail.com
                 </a>
               </li>
               <li className="flex items-center justify-center md:justify-start gap-2">
                 <span className="opacity-90">Teléfono:</span>
-                <a
-                  href="tel:+573112708453"
-                  className="opacity-90 hover:opacity-100 hover:text-[var(--color-rosa)] hover:underline transition-colors"
-                >
+                <a href="tel:+573112708453" className="opacity-90 hover:text-[var(--color-rosa)] hover:underline">
                   +57 311 270 8453
                 </a>
               </li>
@@ -146,13 +99,11 @@ export default function Footer() {
         </div>
 
         {/* Divider */}
-        <div className="my-8 border-t border-white/10"></div>
+        <div className="my-8 border-t border-white/10" />
 
         {/* Copyright */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-          <p className="text-sm opacity-80">
-            © 2025 Insspira. Todos los derechos reservados.
-          </p>
+          <p className="text-sm opacity-80">© 2025 Insspira. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

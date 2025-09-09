@@ -5,16 +5,11 @@ import { useRouter } from "next/navigation";
 import { LoginInitialValues, LoginValidationSchema } from "@/validators/LoginSchema";
 import { LoginUser } from "@/services/authservice";
 import { FcGoogle } from "react-icons/fc";
+import { FiArrowLeft } from "react-icons/fi";
 
 type LoginResponse = {
   token?: string;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    role?: "admin" | "user";
-  };
-  // ... otros campos que devuelva tu backend
+  user?: { id: string; name: string; email: string; role?: "admin" | "user" };
 };
 
 export default function FormLogin() {
@@ -26,21 +21,13 @@ export default function FormLogin() {
     onSubmit: async (values, { setSubmitting }) => {
       try {
         const res = (await LoginUser(values)) as LoginResponse | null;
-        if (!res) return; // el servicio ya hace toast de error
+        if (!res) return;
 
-        // Guarda token/usuario si tu backend los entrega
         if (res.token) localStorage.setItem("token", res.token);
         if (res.user) localStorage.setItem("user", JSON.stringify(res.user));
 
-        // Ruta de destino (ajústala a tu árbol real)
-        const next =
-          res.user?.role === "admin"
-            ? "/admin"
-            : "/home"; // o "/dashboard" si prefieres
-        router.push(next);
-        // opcional: router.refresh();
+        router.push(res.user?.role === "admin" ? "/admin" : "/home");
       } catch (err) {
-        // el servicio ya hace toast, acá solo deja registro
         console.error("❌ Error en login:", err);
       } finally {
         setSubmitting(false);
@@ -56,6 +43,18 @@ export default function FormLogin() {
   return (
     <main className="min-h-[calc(100dvh-0px)] w-full flex items-center justify-center px-4 py-10 bg-[linear-gradient(to_right,rgba(28,22,62,.9)_0%,rgba(116,53,150,.85)_40%,rgba(116,53,150,.85)_60%,rgba(28,22,62,.9)_100%)]">
       <section className="w-full max-w-md">
+        {/* Botón Volver */}
+        <div className="mb-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/20 text-white hover:border-white/40 text-sm"
+          >
+            <FiArrowLeft /> Volver
+          </button>
+        </div>
+
+        {/* Card */}
         <div className="rounded-2xl bg-white/10 border border-white/15 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,.35)] p-6 sm:p-8">
           <header className="text-center mb-6">
             <h1 className="text-2xl sm:text-3xl font-semibold text-white">Iniciar sesión</h1>
@@ -77,9 +76,7 @@ export default function FormLogin() {
                 className={inputBase}
                 aria-invalid={Boolean(formik.touched.email && formik.errors.email)}
               />
-              {formik.touched.email && formik.errors.email && (
-                <p className={errorText}>{formik.errors.email}</p>
-              )}
+              {formik.touched.email && formik.errors.email && <p className={errorText}>{formik.errors.email}</p>}
             </div>
 
             <div>
@@ -96,9 +93,7 @@ export default function FormLogin() {
                 className={inputBase}
                 aria-invalid={Boolean(formik.touched.password && formik.errors.password)}
               />
-              {formik.touched.password && formik.errors.password && (
-                <p className={errorText}>{formik.errors.password}</p>
-              )}
+              {formik.touched.password && formik.errors.password && <p className={errorText}>{formik.errors.password}</p>}
             </div>
 
             <button
@@ -117,7 +112,7 @@ export default function FormLogin() {
             <button
               type="button"
               onClick={() => {
-                // Si tu backend expone OAuth: window.location.href = "http://localhost:3000/auth/google";
+                // window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`;
                 console.log("Login con Google");
               }}
               className="w-full h-12 rounded-xl bg-white text-[var(--color-violeta)] font-medium border border-white/20 hover:opacity-95 active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
