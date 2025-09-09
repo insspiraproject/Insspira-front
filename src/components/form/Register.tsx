@@ -2,23 +2,30 @@
 
 //importaciones
 import { useFormik } from "formik"
-import {
-  RegisterFormValues,
-  RegisterInitialValues,
-  RegisterValidationSchema,
-} from "@/validators/RegisterSchema"
+import { RegisterFormValues, RegisterInitialValues, RegisterValidationSchema } from "@/validators/RegisterSchema"
+import { RegisterUser } from "@/services/authservice"
+
 
 //logica formulario
 export default function RegisterComponent() {
   const formik = useFormik<RegisterFormValues>({
     initialValues: RegisterInitialValues,
     validationSchema: RegisterValidationSchema,
-    onSubmit: (values, { setSubmitting }) => {
-      console.log("Register submitted with values:", values)
-      setTimeout(() => setSubmitting(false), 500)
-    },
-  })
+    onSubmit: async (values) => {
+      try {
+        const response = await RegisterUser(values);
+        console.log("Form submitted with response:", response);
 
+        if (response) {
+          setTimeout(() => {
+            window.location.href = "/home";
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("❌ Error en registro:", error);
+      }
+    },
+  });
 
  //html formulario
   return (

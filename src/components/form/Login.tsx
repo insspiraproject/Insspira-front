@@ -6,6 +6,7 @@ import {
   LoginInitialValues,
   LoginValidationSchema,
 } from "@/validators/LoginSchema";
+import { LoginUser } from "@/services/authservice";
 
 
 //logica formulario
@@ -13,12 +14,23 @@ function FormLogin() {
   const formik = useFormik({
     initialValues: LoginInitialValues,
     validationSchema: LoginValidationSchema,
-    onSubmit: (values, { setSubmitting }) => {
-      console.log("Login submitted with values:", values);
-      setTimeout(() => setSubmitting(false), 500);
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const response = await LoginUser(values); 
+        console.log("Login submitted with response:", response);
+
+        if (response) {
+          setTimeout(() => {
+            window.location.href = "/home";
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("❌ Error en login:", error);
+      } finally {
+        setSubmitting(false);
+      }
     },
   });
-
 
   //html formulario
   return (

@@ -29,6 +29,8 @@
   "dependencies": {
     "axios": "^1.11.0",
     "ogl": "^1.0.11",
-    "swiper": "^11.2.10"
+    "react-toastify": "^11.0.5",
+    "swiper": "^11.2.10",
+    "toastify": "^2.0.1"
   }
 }
