@@ -1,10 +1,12 @@
 // src/components/pins/UploadPin.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DragEvent, ChangeEvent, FormEvent } from "react";
-import { getCloudinarySignature, uploadToCloudinary, savePin } from "@/services/pins/pins.services";
-
+import { getCloudinarySignature, uploadToCloudinary, getCategories,savePin } from "@/services/pins/pins.services";
+import type { IUploadPin } from "@/interfaces/IUploadPin";
+import { ICategory } from "@/interfaces/ICategory";
+import { toast } from "react-toastify";
 function validateFile(f: File) {
   const MAX_BYTES = 2 * 1024 * 1024; // 2MB
   const allowed = ["image/jpeg", "image/png", "image/webp"];
@@ -13,9 +15,13 @@ function validateFile(f: File) {
   return null;
 }
 
+
 export default function UploadPin() {
   const [file, setFile] = useState<File | null>(null);
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState<string>("");
+  const [hashtagsInput, setHashtagsInput] = useState<string>("");
+  const [categories, setCategories] = useState<ICategory[]>([]);
+  const [categoryId, setCategoryId] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -46,9 +52,23 @@ export default function UploadPin() {
     }
   };
 
+ useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categories = await getCategories();
+        setCategories(categories); 
+        if (categories.length > 0) {
+          setCategoryId(categories[0].id); 
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
   const handleUpload = async () => {
     if (!file) {
-      setError("Elegí un archivo primero.");
+      setError("Choose a file.");
       return;
     }
     setError(null);
@@ -58,14 +78,23 @@ export default function UploadPin() {
       const sigData = await getCloudinarySignature();
       const result = await uploadToCloudinary(file, sigData);
       const imageUrl = result.secure_url;
+      const hashtagsArray = hashtagsInput
+        .split("#")
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0)
+        .map(tag => ({ tag })); // Convertir a array de objetos { tag: string }
 
-      await savePin(imageUrl, description.trim());
-      alert(`Archivo "${file.name}" subido correctamente!`);
+       await savePin({ image: imageUrl, description, categoryId,  hashtags: hashtagsArray, } as IUploadPin);
+      toast.success(`File "${file.name}" uploaded successfully!`);
       setFile(null);
       setDescription("");
+      setHashtagsInput("");
+      
+
+
     } catch (err) {
       console.error(err);
-      setError("Error al subir el archivo.");
+      setError("Something went wrong.");
     } finally {
       setUploading(false);
     }
@@ -80,20 +109,20 @@ export default function UploadPin() {
     <div className="min-h-screen w-full flex items-center justify-center bg-[var(--color-violeta)] px-4">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col items-stretch gap-4 p-6 border border-white/15 bg-[var(--color-blanco)]/5 rounded-2xl w-full max-w-md mx-auto"
+        className="flex flex-col items-stretch gap-4 p-6 border border-white/15 bg-[var(--color-morado)]/5 rounded-2xl w-full max-w-md mx-auto"
       >
-        {/* Feedback de error */}
+       
         {error && (
           <div className="rounded-lg border border-red-300/40 bg-red-100 text-red-800 px-3 py-2 text-sm">
             {error}
           </div>
         )}
 
-        {/* Zona de drop / selector */}
+ 
         {file ? (
           <div className="flex flex-col items-center gap-3">
             <p className="text-sm font-medium text-white/90">{file.name}</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+         
             <img
               src={URL.createObjectURL(file)}
               alt="preview"
@@ -104,7 +133,7 @@ export default function UploadPin() {
               onClick={() => setFile(null)}
               className="text-sm text-red-200 underline hover:text-red-100"
             >
-              Eliminar archivo
+              Remove file
             </button>
           </div>
         ) : (
@@ -120,9 +149,9 @@ export default function UploadPin() {
             }`}
           >
             <p className="text-sm text-white/80 text-center">
-              Arrastra una imagen aquí o{" "}
+              Drag and drop or{" "}
               <label htmlFor="fileInput" className="text-white underline cursor-pointer">
-                selecciónala
+                browse files
               </label>
             </p>
           </div>
@@ -130,23 +159,47 @@ export default function UploadPin() {
 
         <input type="file" id="fileInput" className="hidden" onChange={handleFileChange} accept="image/*" />
 
-        <label className="w-full text-sm text-white/90">
-          Descripción
+        <label className="w-full text-md text-white/90">
+          Description
           <input
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full mt-1 p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 outline-none focus:border-white/40"
-            placeholder="Escribe una descripción"
+            placeholder="share your thoughts..."
           />
         </label>
+        <input
+        type="text"
+        placeholder="Add hashtags #tech #art"
+        value={hashtagsInput}
+        onChange={(e) => setHashtagsInput(e.target.value)}
+        className="w-full mt-1 p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 outline-none focus:border-white/40"
+      />  
+
+
+      <select
+  value={categoryId}
+  onChange={(e) => setCategoryId(e.target.value)}
+  className="w-full mt-1 p-2 rounded-lg bg-white/10 border border-white/20 text-white outline-none focus:border-white/40"
+>
+  <option value="" disabled>
+    Choose a category
+  </option>
+  {categories.map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name}
+    </option>
+  ))}
+
+</select>
 
         <button
           type="submit"
           disabled={!file || uploading}
           className="px-4 py-2 rounded-lg bg-white text-[var(--color-violeta)] font-semibold hover:opacity-95 active:scale-[0.99] transition disabled:opacity-50"
         >
-          {uploading ? "Subiendo..." : "Subir archivo"}
+          {uploading ? "Uploading..." : "Upload Pin"}
         </button>
       </form>
     </div>
