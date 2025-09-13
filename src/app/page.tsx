@@ -1,6 +1,6 @@
 // src/app/page.tsx
 
-import Landing from "@/components/Landing";
+import Landing from "@/components/landing/Landing";
 
 
 export default async function Home() {
