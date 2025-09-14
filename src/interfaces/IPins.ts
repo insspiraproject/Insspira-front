@@ -1,6 +1,6 @@
 export interface IPins {
-  id: number;
-  image?: string | null;
+  id: string;
+  image: string;
   description?: string | null;
   likesCount: number;
   commentsCount: number;

@@ -15,7 +15,9 @@ const api = axios.create({
 });
 
 // ---- Servicios ----
-const getAllPins = async (): Promise<IPins[]> => {
+
+//? Traer todos los pins.
+export const getAllPins = async (): Promise<IPins[]> => {
   try {
     const { data } = await api.get<IPins[]>("/pin");
     return data;
@@ -25,6 +27,18 @@ const getAllPins = async (): Promise<IPins[]> => {
   }
 };
 
+//? Traer unicamente un pin mediante su id.
+export const getPinById = async (id: string): Promise<IPins | null> => {
+    try {
+      const { data } = await api.get(`/pin/${id}`);
+      return data;
+    } catch (error) {
+        console.error("Error getting pin using id: ", error);
+        return null;
+    }
+}
+
+//? Buscar pins mediante su descripcion o hashtags.
 export const searchPins = async (query: string): Promise<IPins[]> => {
   try {
     const { data } = await api.get<IPins[]>("/pin/search", {
@@ -68,5 +82,3 @@ export const savePin = async (imageUrl: string, description: string) => {
   const { data } = await api.post("/pin", { imageUrl, description });
   return data;
 };
-
-export default getAllPins;
