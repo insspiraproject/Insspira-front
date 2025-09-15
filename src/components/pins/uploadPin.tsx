@@ -7,6 +7,7 @@ import { getCloudinarySignature, uploadToCloudinary, getCategories,savePin } fro
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import { ICategory } from "@/interfaces/ICategory";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 
 function validateFile(f: File) {
@@ -125,10 +126,12 @@ export default function UploadPin() {
           <div className="flex flex-col items-center gap-3">
             <p className="text-sm font-medium text-white/90">{file.name}</p>
          
-            <img
-              src={URL.createObjectURL(file)}
+           <Image
+              src={URL.createObjectURL(file)} 
               alt="preview"
-              className="w-40 h-40 object-cover rounded-lg shadow"
+              width={160}   
+              height={160}  
+              className="object-cover rounded-lg shadow"
             />
             <button
               type="button"
