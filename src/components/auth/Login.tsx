@@ -6,7 +6,7 @@ import { LoginInitialValues, LoginValidationSchema } from "@/validators/LoginSch
 import { LoginUser } from "@/services/authservice";
 import { FcGoogle } from "react-icons/fc";
 import { FiArrowLeft } from "react-icons/fi";
-
+import {login} from "@/services/authservice"
 
  type LoginResponse = {
   token?: string;
@@ -111,14 +111,11 @@ export default function FormLogin() {
             </div>
 
             <button
+            onClick={() => login()}
               type="button"
-              onClick={() => {
-                // window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`;
-                console.log("Login with Google");
-              }}
               className="w-full h-12 rounded-xl bg-white text-[var(--color-violeta)] font-medium border border-white/20 hover:opacity-95 active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
             >
-              <FcGoogle className="text-xl" />
+              <FcGoogle className="text-xl"/>
               Log in with Google
             </button>
           </form>
