@@ -7,11 +7,9 @@ import { getCloudinarySignature, uploadToCloudinary, getCategories,savePin } fro
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import { ICategory } from "@/interfaces/ICategory";
 import { toast } from "react-toastify";
-import dynamic from "next/dynamic";
 
-const FilePreview = dynamic(() => import("@/components/pins/FilePreview"), {
-  ssr: false,
-});
+
+
 function validateFile(f: File) {
   const MAX_BYTES = 2 * 1024 * 1024; 
   const allowed = ["image/jpeg", "image/png", "image/webp"];
@@ -30,7 +28,17 @@ export default function UploadPin() {
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+  useEffect(() => {
+  if (!file) {
+    setPreviewUrl(null);
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  setPreviewUrl(url);
+  return () => URL.revokeObjectURL(url);
+}, [file]);
   const selectFile = (f: File) => {
     const validationError = validateFile(f);
     if (validationError) {
@@ -128,7 +136,13 @@ export default function UploadPin() {
           <div className="flex flex-col items-center gap-3">
             <p className="text-sm font-medium text-white/90">{file.name}</p>
          
-           <FilePreview file={file} />
+            {previewUrl && (
+              <img
+                src={previewUrl}
+                alt="preview"
+                className="w-40 h-40 object-cover rounded-lg shadow"
+              />
+            )}
             <button
               type="button"
               onClick={() => setFile(null)}
