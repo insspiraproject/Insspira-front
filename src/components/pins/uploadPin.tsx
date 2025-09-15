@@ -30,14 +30,17 @@ export default function UploadPin() {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+ 
   useEffect(() => {
-  if (!file) {
-    setPreviewUrl(null);
-    return;
+  if (!file) return;
+
+  // Solo corre en navegador
+  if (typeof window !== "undefined") {
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
   }
-  const url = URL.createObjectURL(file);
-  setPreviewUrl(url);
-  return () => URL.revokeObjectURL(url);
 }, [file]);
   const selectFile = (f: File) => {
     const validationError = validateFile(f);
