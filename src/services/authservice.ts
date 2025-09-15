@@ -242,7 +242,7 @@ export const LoginUser = async (userData: LoginFormValues): Promise<LoginRespons
 export const api = axios.create({ baseURL: API_BASE });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("app_token");
+  const token = localStorage.getItem("token");
   if (token && config.headers) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -253,10 +253,10 @@ export function login() {
 }
 
 export async function logoutLocal() {
-  localStorage.removeItem("app_token");
+  localStorage.removeItem("token");
   localStorage.removeItem("user");
   try {
-    await api.post("/auth/logout");
+    await api.post(`${API_BASE}/auth/logout`);
   } catch (err) {
     console.warn("Logout backend failed", err);
   }
@@ -264,7 +264,7 @@ export async function logoutLocal() {
 
 export async function getMe(): Promise<AuthUser | null> {
   try {
-    const res = await api.get("/auth/me");
+    const res = await api.get(`${API_BASE}/auth/me`);
     return res.data.user ?? null;
   } catch {
     return null;
@@ -276,7 +276,8 @@ export function saveTokenFromQuery() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
   if (token) {
-    localStorage.setItem("app_token", token);
+    localStorage.setItem("token", token);
+    console.log(token)
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 }

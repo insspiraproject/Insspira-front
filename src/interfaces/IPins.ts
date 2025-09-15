@@ -2,8 +2,10 @@ export interface IPins {
   id: string;
   image: string;
   description?: string | null;
-  likesCount: number;
-  commentsCount: number;
+  likes: number;
+  comment: number;
   views: number;
   user: string;
+  userName: string;
+  name: string;
 }
