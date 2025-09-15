@@ -1,4 +1,4 @@
-// src/components/pins/UploadPin.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,14 +7,16 @@ import { getCloudinarySignature, uploadToCloudinary, getCategories,savePin } fro
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import { ICategory } from "@/interfaces/ICategory";
 import { toast } from "react-toastify";
-import Image from "next/image";
+import dynamic from "next/dynamic";
 
-
+const FilePreview = dynamic(() => import("@/components/pins/FilePreview"), {
+  ssr: false,
+});
 function validateFile(f: File) {
-  const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+  const MAX_BYTES = 2 * 1024 * 1024; 
   const allowed = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowed.includes(f.type)) return "Formato no permitido (jpg/png/webp).";
-  if (f.size > MAX_BYTES) return "Archivo excede 2MB.";
+  if (!allowed.includes(f.type)) return "File format not allowed (jpg/png/webp).";
+  if (f.size > MAX_BYTES) return "File exceeds 2 MB.";
   return null;
 }
 
@@ -126,13 +128,7 @@ export default function UploadPin() {
           <div className="flex flex-col items-center gap-3">
             <p className="text-sm font-medium text-white/90">{file.name}</p>
          
-           <Image
-              src={URL.createObjectURL(file)} 
-              alt="preview"
-              width={160}   
-              height={160}  
-              className="object-cover rounded-lg shadow"
-            />
+           <FilePreview file={file} />
             <button
               type="button"
               onClick={() => setFile(null)}
