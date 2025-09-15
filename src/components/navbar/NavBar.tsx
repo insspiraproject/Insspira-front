@@ -1,27 +1,20 @@
-// src/components/navbar/NavBar.tsx
-"use client";
+'use client'
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import {
-  FiMenu,
-  FiX,
-  FiSearch,
-  FiLogOut,
-  FiHome,
-  FiTrendingUp,
-  FiInfo,
-  FiZap,
-  FiLayout,
-  FiUser,
-} from "react-icons/fi";
+import { useContext, useState } from "react";
+import Search from "@/components/navbar/Search";
+import { useSearch } from "@/context/Search/SearchContext";
+import { FiMenu, FiX, FiSearch, FiLogOut, FiHome, FiTrendingUp, FiInfo, FiZap, FiLayout, FiUser } from "react-icons/fi";
 
-export default function NavBar() {
+export const NavBar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
+  // Hook de búsqueda
+  const { performSearch } = useSearch();
 
   const HIDE_ROUTES = new Set(["/", "/login", "/register"]);
   if (HIDE_ROUTES.has(pathname)) return null;
@@ -30,10 +23,8 @@ export default function NavBar() {
     router.push("/login");
   };
 
-  const linkBtn =
-    "px-3 py-2 rounded-xl border border-white/15 text-white hover:border-white/40 text-sm";
-  const primaryBtn =
-    "px-3 py-2 rounded-xl bg-white text-[var(--color-violeta)] text-sm";
+  const linkBtn = "px-3 py-2 rounded-xl border border-white/15 text-white hover:border-white/40 text-sm";
+  const primaryBtn = "px-3 py-2 rounded-xl bg-white text-[var(--color-violeta)] text-sm";
 
   return (
     <header className="sticky top-0 z-40">
@@ -58,14 +49,7 @@ export default function NavBar() {
 
           {/* Search (desktop) */}
           <div className="hidden md:flex items-center min-w-[300px] max-w-xl flex-1 mx-4">
-            <div className="relative w-full">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" />
-              <input
-                type="text"
-                placeholder="Search for inspiration..."
-                className="w-full pl-10 pr-3 h-11 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/30"
-              />
-            </div>
+            <Search onSearch={performSearch} />
           </div>
 
           {/* Right actions */}
@@ -85,51 +69,19 @@ export default function NavBar() {
 
             {/* Main nav (desktop) */}
             <nav className="hidden md:flex items-center gap-2">
-              <Link href="/home" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiHome /> Feed
-                </span>
-              </Link>
-              <Link href="/trending" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiTrendingUp /> Trending
-                </span>
-              </Link>
-              <Link href="/about" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiInfo /> About
-                </span>
-              </Link>
-              <Link href="/payments" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiZap /> Pricing
-                </span>
-              </Link>
+              <Link href="/home" className={linkBtn}><FiHome /> Feed</Link>
+              <Link href="/trending" className={linkBtn}><FiTrendingUp /> Trending</Link>
+              <Link href="/about" className={linkBtn}><FiInfo /> About</Link>
+              <Link href="/payments" className={linkBtn}><FiZap /> Pricing</Link>
             </nav>
 
-            {/* CTAs (desktop) — for now ALL visible */}
+            {/* CTAs (desktop) */}
             <div className="hidden sm:flex items-center gap-2">
-              <Link href="/dashboard" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiUser /> My Dashboard
-                </span>
-              </Link>
-              <Link href="/dashboard/admin" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiLayout /> Admin Panel
-                </span>
-              </Link>
-              <Link href="/login" className={linkBtn}>
-                Log in
-              </Link>
-              <Link href="/register" className={primaryBtn}>
-                Sign up
-              </Link>
-              <button onClick={logout} className={primaryBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiLogOut /> Log out
-                </span>
-              </button>
+              <Link href="/dashboard" className={linkBtn}><FiUser /> Dashboard</Link>
+              <Link href="/dashboard/admin" className={linkBtn}><FiLayout /> Admin</Link>
+              <Link href="/login" className={linkBtn}>Log in</Link>
+              <Link href="/register" className={primaryBtn}>Sign up</Link>
+              <button onClick={logout} className={primaryBtn}>Log out</button>
             </div>
 
             {/* Hamburger */}
@@ -140,7 +92,6 @@ export default function NavBar() {
               }}
               className="md:hidden p-2 rounded-lg border border-white/15 text-white hover:border-white/40"
               aria-label="Menu"
-              title="Menu"
             >
               {mobileOpen ? <FiX /> : <FiMenu />}
             </button>
@@ -150,14 +101,8 @@ export default function NavBar() {
         {/* Mobile search */}
         {mobileSearchOpen && (
           <div className="md:hidden px-3 sm:px-4 md:px-6 pb-3">
-            <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70" />
-              <input
-                type="text"
-                placeholder="Search for inspiration..."
-                className="w-full pl-10 pr-3 h-11 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/30"
-              />
-            </div>
+            {/* Aquí reemplazamos el input crudo por nuestro componente Search */}
+            <Search onSearch={performSearch} />
           </div>
         )}
 
@@ -165,57 +110,22 @@ export default function NavBar() {
         {mobileOpen && (
           <div className="md:hidden px-3 sm:px-4 md:px-6 pb-3">
             <nav className="grid gap-2">
-              <Link href="/home" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiHome /> Feed
-                </span>
-              </Link>
-              <Link href="/trending" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiTrendingUp /> Trending
-                </span>
-              </Link>
-              <Link href="/about" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiInfo /> About
-                </span>
-              </Link>
-              <Link href="/payments" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiZap /> Pricing
-                </span>
-              </Link>
-              <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiUser /> My Dashboard
-                </span>
-              </Link>
-              <Link href="/dashboard/admin" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiLayout /> Admin Panel
-                </span>
-              </Link>
-              <Link href="/login" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                Log in
-              </Link>
-              <Link href="/register" onClick={() => setMobileOpen(false)} className={primaryBtn}>
-                Sign up
-              </Link>
+              <Link href="/home" onClick={() => setMobileOpen(false)} className={linkBtn}><FiHome /> Feed</Link>
+              <Link href="/trending" onClick={() => setMobileOpen(false)} className={linkBtn}><FiTrendingUp /> Trending</Link>
+              <Link href="/about" onClick={() => setMobileOpen(false)} className={linkBtn}><FiInfo /> About</Link>
+              <Link href="/payments" onClick={() => setMobileOpen(false)} className={linkBtn}><FiZap /> Pricing</Link>
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={linkBtn}><FiUser /> Dashboard</Link>
+              <Link href="/dashboard/admin" onClick={() => setMobileOpen(false)} className={linkBtn}><FiLayout /> Admin</Link>
+              <Link href="/login" onClick={() => setMobileOpen(false)} className={linkBtn}>Log in</Link>
+              <Link href="/register" onClick={() => setMobileOpen(false)} className={primaryBtn}>Sign up</Link>
               <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  logout();
-                }}
+                onClick={() => { setMobileOpen(false); logout(); }}
                 className={primaryBtn}
-              >
-                <span className="inline-flex items-center gap-2">
-                  <FiLogOut /> Log out
-                </span>
-              </button>
+              >Log out</button>
             </nav>
           </div>
         )}
       </div>
     </header>
-  );
+  );
 }

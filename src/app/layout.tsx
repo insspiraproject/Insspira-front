@@ -2,11 +2,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Overlock, DM_Serif_Display, Roboto, Lora, Montserrat } from "next/font/google";
-import NavBar from "@/components/navbar/NavBar";
+import { NavBar } from "@/components/navbar/NavBar";
 import Footer from "@/components/footer/Footer";
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import ChatBot from "@/components/chatBot/ChatBot";
+import { SearchProvider } from "@/context/Search/SearchContext";
 
 // Usa arrays y agrega display: 'swap'. Evita strings vacíos.
 const overlock = Overlock({ weight: ["400"], subsets: ["latin"], variable: "--font-overlock", display: "swap" });
@@ -33,10 +34,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${overlock.variable} ${dmSerif.variable} ${roboto.variable} ${lora.variable} ${montserrat.variable} antialiased`}>
         <ToastContainer position="top-right" theme="dark" />
-        <NavBar />
-        {children}
-        <ChatBot />
-        <Footer />
+          <SearchProvider>
+            <NavBar />
+              {children}
+            <ChatBot />
+            <Footer />
+          </SearchProvider>
       </body>
     </html>
   );
