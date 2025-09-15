@@ -1,6 +1,8 @@
 // src/services/pins.ts
 import axios from "axios";
 import type { IPins } from "@/interfaces/IPins";
+import type { IUploadPin } from "@/interfaces/IUploadPin";
+import type { ICategory } from "@/interfaces/ICategory";
 
 // ---- ENV (lado cliente/SSR) ----
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000").replace(/\/+$/, "");
@@ -15,9 +17,9 @@ const api = axios.create({
 });
 
 // ---- Servicios ----
-const getAllPins = async (): Promise<IPins[]> => {
+export const getAllPins = async (): Promise<IPins[]> => {
   try {
-    const { data } = await api.get<IPins[]>("/pin");
+    const { data } = await api.get<IPins[]>("/pins");
     return data;
   } catch (error) {
     console.error("Error getting pins: ", error);
@@ -39,7 +41,9 @@ export const searchPins = async (query: string): Promise<IPins[]> => {
 
 export const getCloudinarySignature = async () => {
   // usa la misma baseURL (api) para evitar inconsistencias
-  const { data } = await api.get("/cloudinary/signature");
+  const { data } = await api.get("/files/signature");
+  console.log("Cloudinary signature data:", data);
+  
   return data; // { signature, timestamp, folder, ... }
 };
 
@@ -59,24 +63,24 @@ export const uploadToCloudinary = async (
   formData.append("folder", signatureData.folder);
 
   const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
-  const { data } = await axios.post(url, formData);
-
-  return data; // respuesta de Cloudinary
+  const res = await axios.post(url, formData, {
+  headers: { "Content-Type": "multipart/form-data" }
+});
+console.log("Cloudinary upload response:", res.data);
+return res.data;
 };
-
-export const savePin = async (
-  imageUrl: string,
-  description: string,
-  categoryId: string,
-  userId: string
-) => {
-  const { data } = await api.post("/pin", {
-    image: imageUrl,        // <-- tu back pide 'image'
-    description,
-    categoryId,             // <-- requerido por DTO
-    userId,                 // <-- requerido por DTO
-  });
+export const getCategories = async (): Promise<ICategory[]> => {
+  try {
+    const { data } = await api.get<ICategory[]>("/category");
+    return data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+};
+export const savePin = async (pin: IUploadPin) => {
+  const {data  } = await api.post("/pins", pin);
   return data;
 };
 
-export default getAllPins;
+
