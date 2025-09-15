@@ -64,8 +64,18 @@ export const uploadToCloudinary = async (
   return data; // respuesta de Cloudinary
 };
 
-export const savePin = async (imageUrl: string, description: string) => {
-  const { data } = await api.post("/pin", { imageUrl, description });
+export const savePin = async (
+  imageUrl: string,
+  description: string,
+  categoryId: string,
+  userId: string
+) => {
+  const { data } = await api.post("/pin", {
+    image: imageUrl,        // <-- tu back pide 'image'
+    description,
+    categoryId,             // <-- requerido por DTO
+    userId,                 // <-- requerido por DTO
+  });
   return data;
 };
 
