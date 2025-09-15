@@ -1,4 +1,4 @@
-import UploadPin from "@/components/pins/uploadPin";
+import UploadPin from "@/components/pins/UploadPin";
 const CreatePin = () => {
     return(
         <>

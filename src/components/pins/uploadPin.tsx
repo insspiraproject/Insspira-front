@@ -7,6 +7,8 @@ import { getCloudinarySignature, uploadToCloudinary, getCategories,savePin } fro
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import { ICategory } from "@/interfaces/ICategory";
 import { toast } from "react-toastify";
+
+
 function validateFile(f: File) {
   const MAX_BYTES = 2 * 1024 * 1024; // 2MB
   const allowed = ["image/jpeg", "image/png", "image/webp"];
@@ -82,7 +84,7 @@ export default function UploadPin() {
         .split("#")
         .map(tag => tag.trim())
         .filter(tag => tag.length > 0)
-        .map(tag => ({ tag })); // Convertir a array de objetos { tag: string }
+        .map(tag => ({ tag })); 
 
        await savePin({ image: imageUrl, description, categoryId,  hashtags: hashtagsArray, } as IUploadPin);
       toast.success(`File "${file.name}" uploaded successfully!`);
@@ -109,7 +111,7 @@ export default function UploadPin() {
     <div className="min-h-screen w-full flex items-center justify-center bg-[var(--color-violeta)] px-4">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col items-stretch gap-4 p-6 border border-white/15 bg-[var(--color-morado)]/5 rounded-2xl w-full max-w-md mx-auto"
+        className="flex flex-col items-stretch gap-4 p-6 border border-white/15 bg-[var(--color-morado)] rounded-2xl w-full max-w-md mx-auto"
       >
        
         {error && (
@@ -179,17 +181,17 @@ export default function UploadPin() {
 
 
       <select
-  value={categoryId}
-  onChange={(e) => setCategoryId(e.target.value)}
-  className="w-full mt-1 p-2 rounded-lg bg-white/10 border border-white/20 text-white outline-none focus:border-white/40"
->
-  <option value="" disabled>
-    Choose a category
-  </option>
-  {categories.map((cat) => (
-    <option key={cat.id} value={cat.id}>
-      {cat.name}
-    </option>
+        value={categoryId}
+        onChange={(e) => setCategoryId(e.target.value)}
+        className="w-full mt-1 p-2 rounded-lg bg-white/10  border border-white/20 text-white outline-none focus:border-white/40"
+      >
+        <option value="" disabled className="bg-[var(--color-morado)]">
+          Choose a category
+        </option>
+        {categories.map((cat) => (
+          <option key={cat.id} value={cat.id} className="bg-[var(--color-morado)] text-white">
+            {cat.name}
+        </option>
   ))}
 
 </select>
