@@ -1,3 +1,4 @@
+// src/components/dashboard/ProfileHeader.tsx
 "use client";
 
 import { FiMail, FiCalendar, FiEdit2 } from "react-icons/fi";

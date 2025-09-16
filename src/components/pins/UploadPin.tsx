@@ -3,10 +3,11 @@
 
 import { useEffect, useState } from "react";
 import type { DragEvent, ChangeEvent, FormEvent } from "react";
-import { getCloudinarySignature, uploadToCloudinary, getCategories,savePin } from "@/services/pins/pins.services";
+import { getCloudinarySignature, uploadToCloudinary, getCategories,savePin } from "@/services/pins.services";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import { ICategory } from "@/interfaces/ICategory";
 import { toast } from "react-toastify";
+import Image from "next/image";
 
 
 
@@ -140,7 +141,9 @@ export default function UploadPin() {
             <p className="text-sm font-medium text-white/90">{file.name}</p>
          
             {previewUrl && (
-              <img
+              <Image
+                width={160}
+                height={160}
                 src={previewUrl}
                 alt="preview"
                 className="w-40 h-40 object-cover rounded-lg shadow"

@@ -1,20 +1,23 @@
 // scripts/seed-pins.js
-//comando: node scripts/seed-pins.js
-// Este script crea un usuario semilla, categorías y pins en la API REST.
-// Requiere que la API esté corriendo (npm run dev).
-// Usa las variables de entorno de NEXT_PUBLIC_API_URL para apuntar a la API si es necesario. 
-/* Node 18+ trae fetch global */
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+// RUN: node scripts/seed-pins.js
+// Requiere API corriendo (http://localhost:3000 por defecto)
+
+// Node 18+ => fetch global. Si usas <18, instala undici y haz: global.fetch = (...)
+
+const API =
+  (process.env.NEXT_PUBLIC_API_BASE_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:3000").replace(/\/+$/, "");
 
 const ENDPOINTS = {
   register: "/auth/register",
   login: "/auth/login",
   users: "/users",
-  categoryCreate: "/category", // <-- SOLO POST
-  pin: "/pin",
+  categoryCreate: "/category", // cambia a "/categories" si tu API es plural
+  pin: "/pins",                 // cambia a "/pins" si tu API es plural
 };
 
-// usuario semilla
+// ===== Usuario semilla =====
 const RAND = Math.random().toString(36).slice(2, 7);
 const seedUser = {
   name: "Seeder User",
@@ -25,10 +28,10 @@ const seedUser = {
   isAdmin: false,
 };
 
-// categorías (coinciden con tu back: Digital Art, Photography, Architecture, Creative, Tech)
+// ===== Categorías =====
 const CATEGORY_NAMES = ["Photography", "Tech", "Architecture", "Digital Art", "Creative"];
 
-// borradores de pins: asigna una de las categorías anteriores
+// ===== Borradores de pins =====
 const pinDrafts = [
   { image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop", description: "Montañas al amanecer · tonos fríos · calma", categoryName: "Photography" },
   { image: "https://images.unsplash.com/photo-1499084732479-de2c02d45fc4?q=80&w=1200&auto=format&fit=crop", description: "Flatlay workspace minimal · café + teclado", categoryName: "Tech" },
@@ -52,7 +55,7 @@ const pinDrafts = [
   { image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1200&auto=format&fit=crop", description: "Templos en Asia · aventura", categoryName: "Photography" },
 ];
 
-// helpers
+// ===== Helpers =====
 function extractToken(obj) {
   if (!obj || typeof obj !== "object") return null;
   return (
@@ -68,11 +71,13 @@ function extractUser(obj) {
   if (!obj || typeof obj !== "object") return null;
   return obj.user || obj.data?.user || (obj.id && obj.email ? obj : null) || null;
 }
+
 async function req(path, { method = "GET", token, body } = {}) {
   const headers = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API}${path}`, {
+  const url = `${API}${path}`;
+  const res = await fetch(url, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -84,7 +89,11 @@ async function req(path, { method = "GET", token, body } = {}) {
 
   if (!res.ok) {
     const msg = typeof data === "string" ? data : data?.message || `HTTP ${res.status}`;
-    throw new Error(Array.isArray(msg) ? msg.join(" | ") : msg);
+    throw new Error(
+      `${method} ${url} -> ${res.status} ${res.statusText} :: ${
+        Array.isArray(msg) ? msg.join(" | ") : msg
+      } :: body=${typeof data === "string" ? data : JSON.stringify(data)}`
+    );
   }
   return data;
 }
@@ -95,17 +104,22 @@ async function registerOrLogin(user) {
     const token = extractToken(reg);
     const userObj = extractUser(reg);
     if (token || userObj) return { token, user: userObj };
-  } catch {}
+  } catch (e) {
+    console.warn("register falló:", e.message);
+  }
   try {
     const log = await req(ENDPOINTS.login, { method: "POST", body: { email: user.email, password: user.password } });
     const token = extractToken(log);
     const userObj = extractUser(log);
     if (token || userObj) return { token, user: userObj };
-  } catch {}
+  } catch (e) {
+    console.warn("login falló:", e.message);
+  }
   try {
     const created = await req(ENDPOINTS.users, { method: "POST", body: user });
     return { token: null, user: extractUser(created) || created };
-  } catch {
+  } catch (e) {
+    console.warn("POST /users falló:", e.message);
     const list = await req(ENDPOINTS.users).catch(() => null);
     const found = Array.isArray(list) ? list.find((u) => u.email === user.email) : null;
     if (found) return { token: null, user: found };
@@ -117,33 +131,37 @@ async function ensureUserId(auth, email) {
   if (auth?.user?.id) return auth.user.id;
   const list = await req(ENDPOINTS.users, { method: "GET", token: auth?.token });
   const found = Array.isArray(list) ? list.find((u) => u.email === email) : null;
-  if (!found?.id) throw new Error("No encontré el usuario.");
+  if (!found?.id) throw new Error("No encontré el usuario (GET /users).");
   return found.id;
 }
 
-// crea categorías (solo POST /category)
+// Crea categorías (solo POST /category). Si tu API usa plural, cambia ENDPOINTS o este método.
 async function createCategories(token) {
   const map = {};
   for (const name of CATEGORY_NAMES) {
     const created = await req(ENDPOINTS.categoryCreate, { method: "POST", token, body: { name } });
-    if (!created?.id) throw new Error(`El POST /category no devolvió id (categoría: ${name}).`);
+    if (!created?.id) throw new Error(`El POST ${ENDPOINTS.categoryCreate} no devolvió id (categoría: ${name}).`);
     map[name] = created.id;
   }
   return map;
 }
 
-function toPinsReady(drafts, catMap, userId) {
-  return drafts.map((d) => ({
-    image: d.image,
-    description: d.description,
-    categoryId: catMap[d.categoryName],
-    userId,
-  }));
-}
+ function toPinsReady(drafts, catMap) {
+   return drafts.map((d) => ({
+     image: d.image,
+     description: d.description,
+     categoryId: catMap[d.categoryName], // si tu DTO usa otro nombre, cámbialo aquí
+   }));
+ }
 
-// run
+// ===== RUN =====
 (async () => {
   try {
+    if (typeof fetch !== "function") {
+      throw new Error("Tu Node no tiene fetch. Usa Node 18+ o añade un polyfill (undici).");
+    }
+
+    console.log("API:", API);
     console.log("→ Registrando/logueando usuario semilla…");
     const auth = await registerOrLogin(seedUser);
     console.log("   token:", auth.token ? "(recibido)" : "(no recibido, seguimos)");
@@ -152,12 +170,12 @@ function toPinsReady(drafts, catMap, userId) {
     const userId = await ensureUserId(auth, seedUser.email);
     console.log("   userId:", userId);
 
-    console.log("→ Creando categorías vía POST /category …");
+    console.log(`→ Creando categorías vía POST ${ENDPOINTS.categoryCreate} …`);
     const catMap = await createCategories(auth.token);
     console.log("   categorías creadas:", Object.keys(catMap).length);
 
-    console.log("→ Creando pins…");
-    const pins = toPinsReady(pinDrafts, catMap, userId);
+    console.log(`→ Creando pins vía POST ${ENDPOINTS.pin} …`);
+    const pins = toPinsReady(pinDrafts, catMap);
     for (const p of pins) {
       try {
         const created = await req(ENDPOINTS.pin, { method: "POST", token: auth.token, body: p });

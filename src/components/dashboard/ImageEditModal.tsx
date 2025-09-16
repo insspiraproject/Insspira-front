@@ -1,3 +1,4 @@
+// src/components/dashboard/ImageEditModal.tsx
 "use client";
 
 import { useEffect, useState } from "react";
