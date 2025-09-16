@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import Search from "@/components/navbar/Search";
 import { useSearch } from "@/context/Search/SearchContext";
-import { FiMenu, FiX, FiSearch, FiLogOut, FiHome, FiTrendingUp, FiInfo, FiZap, FiLayout, FiUser } from "react-icons/fi";
+import { FiMenu, FiX, FiSearch, FiHome, FiTrendingUp, FiInfo, FiZap, FiLayout, FiUser } from "react-icons/fi";
 
 export const NavBar = () => {
   const pathname = usePathname();

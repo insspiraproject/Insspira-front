@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import type { IPins } from "@/interfaces/IPins";
 import { getPinById } from "@/services/pins/pins.services";
 import Image from "next/image";
 import { IoClose } from "react-icons/io5";
@@ -84,11 +83,6 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
           <div className="mt-2 text-[var(--color-blanco)]">
             {/* <h3>{pin.userame}</h3> */}
             <div className="flex justify-baseline items-center">
-              <Image
-              className="bg-red-500 w-[30px] h-[30px] rounded-full"
-                src={insspira}
-                alt="User photo"
-                />
                 <h3 className="font-[montserrat] text-lg ml-2">
                   {pin.name}
                 </h3>
