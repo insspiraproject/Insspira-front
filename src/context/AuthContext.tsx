@@ -27,6 +27,14 @@ export interface AuthContextValue extends AuthState {
 const USER_KEY = "auth:user";
 const TOKEN_KEY = "auth:token";
 
+type JwtPayload = {
+  sub?: string;
+  email?: string;
+  name?: string;
+  isAdmin?: boolean;
+  // agrega aquí otros claims si los usas (exp, iat, etc.)
+};
+
 function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
   try {
     const [, payload] = token.split(".");
@@ -55,7 +63,9 @@ function writeStorage(next: AuthState) {
     else localStorage.removeItem(USER_KEY);
     if (next.token) localStorage.setItem(TOKEN_KEY, next.token);
     else localStorage.removeItem(TOKEN_KEY);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -94,8 +104,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         //   headers: state.token ? { Authorization: `Bearer ${state.token}` } : undefined,
         // });
         // if (res.ok) { ... }
-      } catch {
-        // ignore
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error("Auth error:", msg);
       } finally {
         setIsChecking(false);
       }
@@ -115,65 +126,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Si no viene user, intenta decodificar el JWT para armar uno básico
     if (!user && token) {
-      const payload = decodeJwt<any>(token) || {};
+      const payload = decodeJwt<JwtPayload>(token) ?? {};
       user = {
-        id: (payload.sub as string) ?? "",
-        email: (payload.email as string) ?? "",
-        name:
-          (payload.name as string) ??
-          ((payload.email as string | undefined)?.split?.("@")[0] ?? "User"),
-        // si algún día incluyes isAdmin en el token, lo tomamos; si no, 'user'
-        role: (payload.isAdmin ? "admin" : "user") as "admin" | "user" | undefined,
+        id: payload.sub ?? "",
+        email: payload.email ?? "",
+        name: payload.name ?? (payload.email?.split?.("@")[0] ?? "User"),
+        role: payload.isAdmin ? "admin" : "user",
       };
     }
 
     return { token, user };
   };
 
-  const login = useCallback(async (values: LoginFormValues) => {
-    const res = await LoginUser(values);
-    if (!res) return false;
-    const { token, user } = extractTokenAndUser(res);
-    setAuth(user, token);
-    return Boolean(user || token);
-  }, [setAuth]);
+  const login = useCallback(
+    async (values: LoginFormValues) => {
+      const res = await LoginUser(values);
+      if (!res) return false;
+      const { token, user } = extractTokenAndUser(res);
+      setAuth(user, token);
+      return Boolean(user || token);
+    },
+    [setAuth]
+  );
 
-  const register = useCallback(async (values: RegisterFormValues) => {
-    const res = await RegisterUser(values);
-    if (!res) return false;
-    const { token, user } = extractTokenAndUser(res);
-    setAuth(user, token);
-    return Boolean(user || token);
-  }, [setAuth]);
+  const register = useCallback(
+    async (values: RegisterFormValues) => {
+      const res = await RegisterUser(values);
+      if (!res) return false;
+      const { token, user } = extractTokenAndUser(res);
+      setAuth(user, token);
+      return Boolean(user || token);
+    },
+    [setAuth]
+  );
 
   const logout = useCallback(() => {
     setAuth(null, null);
   }, [setAuth]);
 
-  const authFetch = useCallback(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const headers = new Headers(init?.headers || {});
-    if (state.token && !headers.has("Authorization")) {
-      headers.set("Authorization", `Bearer ${state.token}`);
-    }
-    const res = await fetch(input, { ...init, headers });
-    if (res.status === 401) {
-      setAuth(null, null);
-    }
-    return res;
-  }, [state.token, setAuth]);
+  // fetch autenticado tipado
+  const authFetch = useCallback(
+    async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+      const headers = new Headers(init?.headers ?? {});
+      const token = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+      if (token && !headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return fetch(input, { ...init, headers });
+    },
+    []
+  );
 
-  const value: AuthContextValue = useMemo(() => ({
-    ...state,
-    isAuthenticated: Boolean(state.user || state.token),
-    isAdmin: state.user?.role === "admin",
-    isHydrated,
-    isChecking,
-    login,
-    register,
-    logout,
-    setAuth,
-    authFetch,
-  }), [state, isHydrated, isChecking, login, register, logout, setAuth, authFetch]);
+  const value: AuthContextValue = useMemo(
+    () => ({
+      ...state,
+      isAuthenticated: Boolean(state.user || state.token),
+      isAdmin: state.user?.role === "admin",
+      isHydrated,
+      isChecking,
+      login,
+      register,
+      logout,
+      setAuth,
+      authFetch,
+    }),
+    [state, isHydrated, isChecking, login, register, logout, setAuth, authFetch]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

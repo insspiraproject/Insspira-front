@@ -17,8 +17,29 @@ import {
   type UserProfile,
 } from "@/mocks/userMocks";
 
-const API =
-  (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
+type APIUser = {
+  id: string;
+  name?: string | null;
+  username?: string | null;
+  email: string;
+  avatar?: string | null;
+  bio?: string | null;
+  createdAt?: string | Date | null;
+  pinsCount?: number | null;
+};
+
+const API = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
+
+// Normaliza fechas (string | Date | null | undefined) a ISO string
+function toIsoStringSafe(v: string | Date | null | undefined): string | undefined {
+  if (!v) return undefined;
+  try {
+    const d = v instanceof Date ? v : new Date(v);
+    return d.toISOString();
+  } catch {
+    return undefined;
+  }
+}
 
 export default function DashboardView() {
   const { isHydrated, isAuthenticated, user: authUser, authFetch } = useAuth();
@@ -36,29 +57,32 @@ export default function DashboardView() {
 
     (async () => {
       try {
-        let backendUser: any | null = null;
+        let backendUser: APIUser | null = null;
         const res = await authFetch(`${API}/users/${authUser.id}`);
-        if (res.ok) backendUser = await res.json();
+        if (res.ok) backendUser = (await res.json()) as APIUser;
 
         const merged: UserProfile = {
-          // FALTABA EL ID
-          id: backendUser?.id ?? authUser?.id ?? mockUser.id,
+          // asegúrate de setear el id (UserProfile lo requiere)
+          id: backendUser?.id ?? authUser.id ?? mockUser.id,
 
-          // básicos
-          name: backendUser?.name ?? authUser?.name ?? mockUser.name,
+          // básicos con fallback
+          name: backendUser?.name ?? authUser.name ?? mockUser.name,
           username: backendUser?.username ?? mockUser.username,
-          email: backendUser?.email ?? authUser?.email ?? mockUser.email,
+          email: backendUser?.email ?? authUser.email ?? mockUser.email,
 
           // opcionales con fallback
           avatar: backendUser?.avatar ?? mockUser.avatar,
           bio: backendUser?.bio ?? mockUser.bio,
-          joinDate: backendUser?.createdAt ?? mockUser.joinDate,
+
+          // ← aquí normalizamos a string siempre
+          joinDate: toIsoStringSafe(backendUser?.createdAt) ?? mockUser.joinDate,
+
           postsCount:
             typeof backendUser?.pinsCount === "number"
               ? backendUser.pinsCount
               : mockUser.postsCount,
 
-          // aún sin API real → mantener mock
+          // todavía mockeados
           subscription: mockUser.subscription,
           payments: mockUser.payments,
         };
@@ -78,6 +102,7 @@ export default function DashboardView() {
         // si falló la API, usar mock pero respetar lo que sabemos del authUser
         setUser({
           ...mockUser,
+          id: authUser?.id ?? mockUser.id,
           name: authUser?.name ?? mockUser.name,
           email: authUser?.email ?? mockUser.email,
         });

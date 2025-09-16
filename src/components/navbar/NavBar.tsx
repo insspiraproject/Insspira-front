@@ -176,6 +176,8 @@ export default function NavBar() {
         {mobileOpen && (
           <div className="md:hidden px-3 sm:px-4 md:px-6 pb-3">
             <nav className="grid gap-2">
+              {isAuthenticated && (
+               <>
               <Link href="/home" onClick={() => setMobileOpen(false)} className={linkBtn}>
                 <span className="inline-flex items-center gap-2">
                   <FiHome /> Feed
@@ -186,10 +188,6 @@ export default function NavBar() {
                   <FiZap /> Pricing
                 </span>
               </Link>
-
-
-              {isAuthenticated && (
-               <>
                 <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={linkBtn}>
                   <span className="inline-flex items-center gap-2">
                     <FiUser /> My Dashboard
