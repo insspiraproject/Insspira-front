@@ -1,3 +1,4 @@
+// src/components/dashboard/PostCard.tsx
 "use client";
 
 import { Post } from "@/mocks/userMocks";

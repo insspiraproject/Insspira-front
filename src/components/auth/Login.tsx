@@ -1,40 +1,46 @@
+// src/components/auth/Login.tsx
 "use client";
 
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { LoginInitialValues, LoginValidationSchema } from "@/validators/LoginSchema";
-import { LoginUser } from "@/services/authservice";
 import { FcGoogle } from "react-icons/fc";
 import { FiArrowLeft } from "react-icons/fi";
-
-
- type LoginResponse = {
-  token?: string;
-  user?: { id: string; name: string; email: string; role?: "admin" | "user" };
-};
+import { useAuth } from "@/context/AuthContext";
 
 export default function FormLogin() {
   const router = useRouter();
+  const { login, isHydrated, user } = useAuth();
+
+  // fallback por si el re-render del contexto no llegó aún
+  const getRoleFromStorage = (): "admin" | "user" | undefined => {
+    try {
+      const raw = localStorage.getItem("auth:user");
+      if (!raw) return undefined;
+      const parsed = JSON.parse(raw) as { role?: "admin" | "user" };
+      return parsed.role;
+    } catch {
+      return undefined;
+    }
+  };
 
   const formik = useFormik({
     initialValues: LoginInitialValues,
     validationSchema: LoginValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
       try {
-        const res = (await LoginUser(values)) as LoginResponse | null;
-        if (!res) return;
-
-        if (res.token) localStorage.setItem("token", res.token);
-        if (res.user) localStorage.setItem("user", JSON.stringify(res.user));
-
-        router.push(res.user?.role === "admin" ? "/admin" : "/home");
-      } catch (err) {
-        console.error("❌ Login error:", err);
+        const ok = await login(values);
+        if (ok) {
+          const role = user?.role ?? getRoleFromStorage();
+          router.push(role === "admin" ? "/admin" : "/dashboard"); // <-- antes "/dashboard/admin" y "/home"
+        }
       } finally {
         setSubmitting(false);
       }
     },
   });
+
+  if (!isHydrated) return null; // evita parpadeo
 
   const inputBase =
     "w-full h-12 px-4 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/40 transition";

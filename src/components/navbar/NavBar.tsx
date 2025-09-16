@@ -1,4 +1,3 @@
-// src/components/navbar/NavBar.tsx
 "use client";
 
 import Link from "next/link";
@@ -10,12 +9,12 @@ import {
   FiSearch,
   FiLogOut,
   FiHome,
-  FiTrendingUp,
-  FiInfo,
   FiZap,
   FiLayout,
   FiUser,
+  FiPlus,
 } from "react-icons/fi";
+import { useAuth } from "@/context/AuthContext";
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -23,11 +22,16 @@ export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
+  const { isHydrated, isAuthenticated, isAdmin, logout } = useAuth();
+
+  if (!isHydrated) return null;
+
   const HIDE_ROUTES = new Set(["/", "/login", "/register"]);
   if (HIDE_ROUTES.has(pathname)) return null;
 
-  const logout = () => {
-    router.push("/login");
+  const handleLogout = () => {
+    logout();
+    router.replace("/login");
   };
 
   const linkBtn =
@@ -90,46 +94,53 @@ export default function NavBar() {
                   <FiHome /> Feed
                 </span>
               </Link>
-              <Link href="/trending" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiTrendingUp /> Trending
-                </span>
-              </Link>
-              <Link href="/about" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiInfo /> About
-                </span>
-              </Link>
               <Link href="/payments" className={linkBtn}>
                 <span className="inline-flex items-center gap-1">
                   <FiZap /> Pricing
                 </span>
               </Link>
+
+              {isAuthenticated && (
+               <>
+                <Link href="/dashboard" className={linkBtn}>
+                  <span className="inline-flex items-center gap-1">
+                    <FiUser /> My Dashboard
+                  </span>
+                </Link>
+                <Link href="/uploadPin" className={linkBtn}>
+                  <span className="inline-flex items-center gap-1">
+                    <FiPlus /> Create pin
+                  </span>
+                </Link>
+               </> 
+              )}
+              {isAuthenticated && isAdmin && (
+                <Link href="/admin" className={linkBtn}>
+                  <span className="inline-flex items-center gap-1">
+                    <FiLayout /> Admin Panel
+                  </span>
+                </Link>
+              )}
             </nav>
 
-            {/* CTAs (desktop) — for now ALL visible */}
+            {/* CTAs (desktop) */}
             <div className="hidden sm:flex items-center gap-2">
-              <Link href="/dashboard" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiUser /> My Dashboard
-                </span>
-              </Link>
-              <Link href="/dashboard/admin" className={linkBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiLayout /> Admin Panel
-                </span>
-              </Link>
-              <Link href="/login" className={linkBtn}>
-                Log in
-              </Link>
-              <Link href="/register" className={primaryBtn}>
-                Sign up
-              </Link>
-              <button onClick={logout} className={primaryBtn}>
-                <span className="inline-flex items-center gap-1">
-                  <FiLogOut /> Log out
-                </span>
-              </button>
+              {!isAuthenticated ? (
+                <>
+                  <Link href="/login" className={linkBtn}>
+                    Log in
+                  </Link>
+                  <Link href="/register" className={primaryBtn}>
+                    Sign up
+                  </Link>
+                </>
+              ) : (
+                <button onClick={handleLogout} className={primaryBtn}>
+                  <span className="inline-flex items-center gap-1">
+                    <FiLogOut /> Log out
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Hamburger */}
@@ -170,48 +181,57 @@ export default function NavBar() {
                   <FiHome /> Feed
                 </span>
               </Link>
-              <Link href="/trending" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiTrendingUp /> Trending
-                </span>
-              </Link>
-              <Link href="/about" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiInfo /> About
-                </span>
-              </Link>
               <Link href="/payments" onClick={() => setMobileOpen(false)} className={linkBtn}>
                 <span className="inline-flex items-center gap-2">
                   <FiZap /> Pricing
                 </span>
               </Link>
-              <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiUser /> My Dashboard
-                </span>
-              </Link>
-              <Link href="/dashboard/admin" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                <span className="inline-flex items-center gap-2">
-                  <FiLayout /> Admin Panel
-                </span>
-              </Link>
-              <Link href="/login" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                Log in
-              </Link>
-              <Link href="/register" onClick={() => setMobileOpen(false)} className={primaryBtn}>
-                Sign up
-              </Link>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  logout();
-                }}
-                className={primaryBtn}
-              >
-                <span className="inline-flex items-center gap-2">
-                  <FiLogOut /> Log out
-                </span>
-              </button>
+
+
+              {isAuthenticated && (
+               <>
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={linkBtn}>
+                  <span className="inline-flex items-center gap-2">
+                    <FiUser /> My Dashboard
+                  </span>
+                </Link>
+                <Link href="/uploadPin" onClick={() => setMobileOpen(false)} className={linkBtn}>
+                  <span className="inline-flex items-center gap-2">
+                    <FiPlus /> Create pin
+                  </span>
+                </Link>
+                </> 
+              )}
+              {isAuthenticated && isAdmin && (
+                <Link href="/admin" onClick={() => setMobileOpen(false)} className={linkBtn}>
+                  <span className="inline-flex items-center gap-2">
+                    <FiLayout /> Admin Panel
+                  </span>
+                </Link>
+              )}
+
+              {!isAuthenticated ? (
+                <>
+                  <Link href="/login" onClick={() => setMobileOpen(false)} className={linkBtn}>
+                    Log in
+                  </Link>
+                  <Link href="/register" onClick={() => setMobileOpen(false)} className={primaryBtn}>
+                    Sign up
+                  </Link>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setMobileOpen(false);
+                    handleLogout();
+                  }}
+                  className={primaryBtn}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <FiLogOut /> Log out
+                  </span>
+                </button>
+              )}
             </nav>
           </div>
         )}

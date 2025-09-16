@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import type { IPins } from "@/interfaces/IPins";
-import { searchPins } from "@/services/pins/pins.services";
+import { searchPins } from "@/services/pins.services";
 
 export const usePinsSearch = () => {
   const [results, setResults] = useState<IPins[] | null>(null);
