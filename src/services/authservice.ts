@@ -1,4 +1,3 @@
-// src/services/authservice.ts
 import { LoginFormValues } from "@/validators/LoginSchema";
 import { RegisterFormValues } from "@/validators/RegisterSchema";
 import { toast } from "react-toastify";
@@ -19,17 +18,18 @@ export interface LoginResponse {
   [k: string]: unknown;
 }
 
-// ✅ usa type alias en lugar de una interfaz vacía que extiende de otra
 export type RegisterResponse = LoginResponse;
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") ?? "http://localhost:3000";
 
-// --- helpers ---
+/* ================= helpers ================= */
+
 interface JWTPayload {
   sub?: string;
   email?: string;
   name?: string;
+  isAdmin?: boolean;
   [k: string]: unknown;
 }
 
@@ -99,7 +99,7 @@ function pickMessage(data: unknown, fallback: string): string {
 
 function pickToken(data: unknown): string | undefined {
   if (!isRecord(data)) return undefined;
-  const t = data.accessToken ?? data.token;
+  const t = (data as Record<string, unknown>).accessToken ?? (data as Record<string, unknown>).token;
   return typeof t === "string" ? t : undefined;
 }
 
@@ -121,7 +121,8 @@ async function postJSON<TReq, TRes = unknown>(
   return { ok: true, status: res.status, data };
 }
 
-// --- SERVICES ---
+/* ================= Auth local ================= */
+
 export const RegisterUser = async (
   userData: RegisterFormValues
 ): Promise<RegisterResponse | null> => {
@@ -165,3 +166,74 @@ export const LoginUser = async (
     return null;
   }
 };
+
+/* ============= Soporte Auth0: login + guardado token de callback ============= */
+
+// Redirige a la ruta de login del proveedor (Auth0) expuesta en tu backend (por ejemplo /login)
+export function loginWithAuth0(): void {
+  const path = process.env.NEXT_PUBLIC_AUTH0_LOGIN_PATH || "/login";
+  window.location.href = `${API_BASE}${path}`;
+}
+
+// Guarda ?token=... (callback de Auth0) y actualiza el AuthContext con setAuth
+export async function saveTokenFromQueryAndHydrateAuth(
+  setAuth: (user: AuthUser | null, token: string | null) => void
+): Promise<void> {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  const token = url.searchParams.get("token");
+  if (!token) return;
+
+  localStorage.setItem("auth:token", token);
+  const user = await getUserFromToken(token);
+  if (user) localStorage.setItem("auth:user", JSON.stringify(user));
+  setAuth(user ?? null, token);
+
+  url.searchParams.delete("token");
+  window.history.replaceState({}, document.title, url.toString());
+}
+
+/* ================= getMe() para tu hook useUser ================= */
+
+interface MeResponse {
+  user?: APIUser | null;          // devuelto por tu /auth/me cuando hay sesión
+  oidcUser?: { sub?: string; email?: string; name?: string } | null; // opcional en tu back
+  message?: string;
+}
+
+export async function getMe(): Promise<AuthUser | null> {
+  try {
+    // soporta ambas claves que usas en el front
+    const token =
+      (typeof window !== "undefined" && (localStorage.getItem("auth:token") || localStorage.getItem("token"))) ||
+      null;
+
+    const res = await fetch(`${API_BASE}/auth/me`, {
+      method: "GET",
+      credentials: "include", // por si tu back usa cookie de Auth0
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+
+    const data = await safeJson<MeResponse>(res);
+    // si el back retorna un 'user' ya normalizado
+    if (data?.user) {
+      const u = data.user;
+      return {
+        id: u.id,
+        name: u.name ?? u.username ?? u.email,
+        email: u.email,
+        role: u.isAdmin ? "admin" : "user",
+      };
+    }
+
+    // fallback: si tenemos token, decodificamos y completamos llamando /users/:id
+    if (token) {
+      const user = await getUserFromToken(token);
+      if (user) return user;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}

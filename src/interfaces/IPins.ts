@@ -6,4 +6,6 @@ export interface IPins {
   commentsCount: number;
   views: number;
   user: string;
+  likes?: number;
+  comment?: number;
 }

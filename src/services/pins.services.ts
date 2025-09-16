@@ -36,6 +36,29 @@ type AxiosLikeError = {
   response?: { status?: number; statusText?: string; data?: unknown };
 };
 
+interface PinUserSlim {
+  name?: string | null;
+  username?: string | null;
+}
+
+export interface UIPinModal {
+  name: string;
+  image: string;
+  description?: string | null;
+  likes: number;
+  comment: number;
+  views: number;
+}
+
+interface PinByIdResponse {
+  id: string;
+  image: string;
+  description?: string | null;
+  likesCount?: number;
+  commentsCount?: number;
+  viewsCount?: number;
+  user?: PinUserSlim | null;
+}
 // ✅ sin any: estrecha a un tipo auxiliar
 function explainAxiosError(err: unknown) {
   const e = err as AxiosLikeError;
@@ -56,6 +79,26 @@ export const getAllPins = async (): Promise<IPins[]> => {
     return [];
   }
 };
+
+/* ===== Servicio ===== */
+export async function getPinById(id: string): Promise<UIPinModal | null> {
+  try {
+    // OJO: tu back es /pins/:id (con S)
+    const { data } = await api.get<PinByIdResponse>(`/pins/${id}`);
+
+    return {
+      name: data.user?.name ?? data.user?.username ?? "Unknown",
+      image: data.image,
+      description: data.description ?? null,
+      likes: typeof data.likesCount === "number" ? data.likesCount : 0,
+      comment: typeof data.commentsCount === "number" ? data.commentsCount : 0,
+      views: typeof data.viewsCount === "number" ? data.viewsCount : 0,
+    };
+  } catch (err) {
+    console.error("getPinById failed:", err);
+    return null;
+  }
+}
 
 export const searchPins = async (query: string): Promise<IPins[]> => {
   try {
