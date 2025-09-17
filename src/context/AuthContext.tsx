@@ -1,11 +1,23 @@
 "use client";
 
 import {
-  createContext, useCallback, useContext, useEffect, useMemo, useState,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
 import type { LoginFormValues } from "@/validators/LoginSchema";
 import type { RegisterFormValues } from "@/validators/RegisterSchema";
-import { AuthUser, LoginUser, RegisterUser } from "@/services/authservice";
+import {
+  AuthUser,
+  LoginUser,
+  RegisterUser,
+  // 👇 añadidos:
+  saveTokenFromQueryAndHydrateAuth,
+  getMe,
+} from "@/services/authservice";
 
 export interface AuthState {
   user: AuthUser | null;
@@ -32,7 +44,6 @@ type JwtPayload = {
   email?: string;
   name?: string;
   isAdmin?: boolean;
-  // agrega aquí otros claims si los usas (exp, iat, etc.)
 };
 
 function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
@@ -93,29 +104,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     writeStorage({ user, token });
   }, []);
 
-  // (opcional) chequeo de token en /auth/me si lo habilitas
+  // ✅ Chequeo al hidratar: 1) captura ?token=... de Auth0  2) si no hay token pero hay cookie de sesión, usa /auth/me
   useEffect(() => {
-    const check = async () => {
-      if (!isHydrated) return;
+    if (!isHydrated) return;
+
+    let cancelled = false;
+    (async () => {
       setIsChecking(true);
       try {
-        // Si tuvieras un endpoint de verificación por Bearer:
-        // const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000"}/auth/me`, {
-        //   headers: state.token ? { Authorization: `Bearer ${state.token}` } : undefined,
-        // });
-        // if (res.ok) { ... }
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error("Auth error:", msg);
+        // 1) Guardar token de callback (?token=...) y setear contexto
+        await saveTokenFromQueryAndHydrateAuth(setAuth);
+
+        // 2) Si seguimos sin user ni token, intentar sesión por cookie (/auth/me)
+        const hasUser = Boolean(readStorage().user);
+        const hasToken = Boolean(readStorage().token);
+        if (!hasUser && !hasToken) {
+          const me = await getMe();
+          if (!cancelled && me) {
+            // no tenemos token (cookie session), pero setear user basta para isAuthenticated
+            setAuth(me, null);
+          }
+        }
+      } catch (err) {
+        console.error("Auth bootstrap error:", err);
       } finally {
-        setIsChecking(false);
+        if (!cancelled) setIsChecking(false);
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-    check();
-  }, [isHydrated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, setAuth]);
 
   const extractTokenAndUser = (res: unknown): { token: string | null; user: AuthUser | null } => {
-    // Acepta token en 'token' o 'accessToken' y un posible 'user'
     const anyRes = res as Record<string, unknown>;
     const token =
       (anyRes?.token as string | undefined) ??
@@ -124,7 +147,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     let user = (anyRes?.user as AuthUser | undefined) ?? null;
 
-    // Si no viene user, intenta decodificar el JWT para armar uno básico
     if (!user && token) {
       const payload = decodeJwt<JwtPayload>(token) ?? {};
       user = {
@@ -164,7 +186,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuth(null, null);
   }, [setAuth]);
 
-  // fetch autenticado tipado
   const authFetch = useCallback(
     async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const headers = new Headers(init?.headers ?? {});
