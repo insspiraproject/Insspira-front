@@ -15,13 +15,14 @@ import {
   FiPlus,
 } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
+import { useSearchContext } from "@/context/SearchContext";
 
 export default function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-
+  const { performSearch } = useSearchContext()
   const { isHydrated, isAuthenticated, isAdmin, logout } = useAuth();
 
   if (!isHydrated) return null;
@@ -68,6 +69,7 @@ export default function NavBar() {
                 type="text"
                 placeholder="Search for inspiration..."
                 className="w-full pl-10 pr-3 h-11 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/30"
+                onChange={(e) => performSearch(e.target.value)}
               />
             </div>
           </div>
