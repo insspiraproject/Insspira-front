@@ -13,8 +13,7 @@ const API_URL = (
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
 
-export const api = axios.create({ baseURL: API_URL });
-
+export const api = axios.create({ baseURL: API_URL, withCredentials: true });
 // ✅ sin any: usa AxiosRequestHeaders
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
