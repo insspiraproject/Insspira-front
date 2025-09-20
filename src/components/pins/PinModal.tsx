@@ -6,6 +6,7 @@ import Image from "next/image";
 import { IoClose } from "react-icons/io5";
 import { FcLike } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
+import { addLike } from "@/services/pins.services";
 
 interface PinModalProps {
   id: string;
@@ -13,6 +14,7 @@ interface PinModalProps {
 }
 
 interface PinModal {
+  id:string;
   name: string;
   image: string;
   description?: string | null;
@@ -100,7 +102,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
 
           <div className="flex justify-baseline items-center text-white">
             <div className="flex justify-baseline items-center">
-              <FcLike/>
+              <FcLike onClick={() => addLike(pin.id)}/>
               <span className="ml-1">{pin.likes}</span>
             </div>
             <div className="flex justify-baseline items-center ml-2">

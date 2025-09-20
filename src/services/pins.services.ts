@@ -42,6 +42,7 @@ interface PinUserSlim {
 }
 
 export interface UIPinModal {
+  id: string;
   name: string;
   image: string;
   description?: string | null;
@@ -87,6 +88,7 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
     const { data } = await api.get<PinByIdResponse>(`/pins/${id}`);
 
     return {
+      id: data.id,
       name: data.user?.name ?? data.user?.username ?? "Unknown",
       image: data.image,
       description: data.description ?? null,
@@ -173,3 +175,30 @@ export const savePin = async (pin: IUploadPin | UploadPayload) => {
     throw error;
   }
 };
+
+
+export const addLike = async (pinId: string) => {
+  const token = localStorage.getItem("auth:token")
+  console.log(token)
+  if (!pinId) return;
+
+  if(!token) {
+    console.log("JWT not found");
+    return null;
+  }
+
+  try {
+    const response = await api.post(
+      `/like/${pinId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    console.log('Authorization header:', `Bearer ${token}`)
+    return response;
+  } catch (error) {
+    console.error("error when giving like", error);
+    return null;
+  }
+}

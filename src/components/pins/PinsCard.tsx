@@ -2,7 +2,7 @@ import { IPins } from "@/interfaces/IPins";
 import { FcLike } from "react-icons/fc";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
-
+import { addLike } from "@/services/pins.services";
 
 interface PinsCardProps {
   pin: IPins | null | undefined;
@@ -37,7 +37,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
       <div className="flex flex-col text-xs md:text-sm bg-[var(--color-rosa)] p-2 rounded-b-xl mb-6">
         <div className="flex items-center mb-2">
           <div className="flex items-center mr-4">
-            <FcLike size={18} className="md:size-[20px]" />
+            <FcLike size={18} className="md:size-[20px]" onClick={() => addLike(pin.id)}/>
             <span className="ml-1">{likes}</span>
           </div>
           <div className="flex items-center">
