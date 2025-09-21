@@ -1,3 +1,4 @@
+// src/components/dashboard/DataFallbackNotice.tsx
 "use client";
 
 import { FiX, FiInfo } from "react-icons/fi";
