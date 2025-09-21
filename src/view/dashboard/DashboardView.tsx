@@ -1,21 +1,30 @@
-"use client";
+// src/view/dashboard/DashboardView.tsx
+'use client';
 
-import { useEffect, useState } from "react";
-import ProfileHeader from "@/components/dashboard/ProfileHeader";
-import Tabs from "@/components/dashboard/Tabs";
-import MasonryGrid from "@/components/dashboard/MasonryGrid";
-import SubscriptionModal from "@/components/dashboard/SubscriptionModal";
-import ImageEditModal from "@/components/dashboard/ImageEditModal";
-import ProfileEditModal from "@/components/dashboard/ProfileEditModal";
-import DataFallbackNotice from "@/components/dashboard/DataFallbackNotice";
-import { useAuth } from "@/context/AuthContext";
+import { useEffect, useState } from 'react';
+import ProfileHeader from '@/components/dashboard/ProfileHeader';
+import Tabs from '@/components/dashboard/Tabs';
+import MasonryGrid from '@/components/dashboard/MasonryGrid';
+import SubscriptionModal from '@/components/dashboard/SubscriptionModal';
+import ImageEditModal from '@/components/dashboard/ImageEditModal';
+import ProfileEditModal from '@/components/dashboard/ProfileEditModal';
+import DataFallbackNotice from '@/components/dashboard/DataFallbackNotice';
+import { useAuth } from '@/context/AuthContext';
 
 import {
   currentUser as mockUser,
-  currentUserLikedPosts,
-  currentUserPosts,
+  currentUserLikedPosts as mockLiked,
+  currentUserPosts as mockPosts,
   type UserProfile,
-} from "@/mocks/userMocks";
+  type Post, // <- tipo que exige tags: string[]
+} from '@/mocks/userMocks';
+
+import {
+  fetchUserPins,
+  fetchUserLikedPins,
+  fetchUserPinsCount,
+  type UIPost,
+} from '@/services/dashboard';
 
 type APIUser = {
   id: string;
@@ -28,9 +37,8 @@ type APIUser = {
   pinsCount?: number | null;
 };
 
-const API = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000").replace(/\/+$/, "");
+const API = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
-// Normaliza fechas (string | Date | null | undefined) a ISO string
 function toIsoStringSafe(v: string | Date | null | undefined): string | undefined {
   if (!v) return undefined;
   try {
@@ -41,72 +49,96 @@ function toIsoStringSafe(v: string | Date | null | undefined): string | undefine
   }
 }
 
+// ⬇️ ahora incluimos tags para satisfacer el tipo Post
+function uiPostToMockPost(p: UIPost): Post {
+  return {
+    id: p.id,
+    title: p.title,
+    imageUrl: p.imageUrl,
+    stats: { likes: p.stats.likes, views: p.stats.views },
+    createdAt: p.createdAt,
+    tags: p.tags ?? [], // <- clave para evitar el error TS
+  };
+}
+
 export default function DashboardView() {
   const { isHydrated, isAuthenticated, user: authUser, authFetch } = useAuth();
 
-  const [active, setActive] = useState<"posts" | "likes">("posts");
+  const [active, setActive] = useState<'posts' | 'likes'>('posts');
   const [showSub, setShowSub] = useState(false);
   const [showAvatar, setShowAvatar] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [showNotice, setShowNotice] = useState(false);
 
-  // Cargar datos reales (si existen) y completar con mocks
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [liked, setLiked] = useState<Post[]>([]);
+  const [postsCount, setPostsCount] = useState<number>(0);
+
   useEffect(() => {
     if (!isHydrated || !isAuthenticated || !authUser?.id) return;
 
     (async () => {
       try {
+        // 1) datos del usuario
         let backendUser: APIUser | null = null;
         const res = await authFetch(`${API}/users/${authUser.id}`);
         if (res.ok) backendUser = (await res.json()) as APIUser;
 
         const merged: UserProfile = {
-          // asegúrate de setear el id (UserProfile lo requiere)
           id: backendUser?.id ?? authUser.id ?? mockUser.id,
-
-          // básicos con fallback
           name: backendUser?.name ?? authUser.name ?? mockUser.name,
           username: backendUser?.username ?? mockUser.username,
           email: backendUser?.email ?? authUser.email ?? mockUser.email,
-
-          // opcionales con fallback
           avatar: backendUser?.avatar ?? mockUser.avatar,
           bio: backendUser?.bio ?? mockUser.bio,
-
-          // ← aquí normalizamos a string siempre
           joinDate: toIsoStringSafe(backendUser?.createdAt) ?? mockUser.joinDate,
-
           postsCount:
-            typeof backendUser?.pinsCount === "number"
+            typeof backendUser?.pinsCount === 'number'
               ? backendUser.pinsCount
               : mockUser.postsCount,
-
-          // todavía mockeados
           subscription: mockUser.subscription,
           payments: mockUser.payments,
         };
-
         setUser(merged);
 
-        // Detectar si usamos algún fallback de mock
+        // 2) posts propios + likes + contador real
+        try {
+          const [p, l, c] = await Promise.all([
+            fetchUserPins(merged.id),
+            fetchUserLikedPins(merged.id),
+            fetchUserPinsCount(merged.id),
+          ]);
+          setPosts(p.map(uiPostToMockPost));
+          setLiked(l.map(uiPostToMockPost));
+          setPostsCount(c);
+        } catch {
+          // fallback a mocks si falla la API de listados
+          setPosts(mockPosts);
+          setLiked(mockLiked);
+          setPostsCount(merged.postsCount ?? mockUser.postsCount);
+        }
+
+        // 3) aviso de fallback si faltan campos
         const usingFallback =
           !backendUser?.avatar ||
           !backendUser?.bio ||
           !backendUser?.createdAt ||
           backendUser?.pinsCount == null;
-
-        const dismissed = localStorage.getItem("fallback_notice_dismissed") === "1";
+        const dismissed = localStorage.getItem('fallback_notice_dismissed') === '1';
         if (usingFallback && !dismissed) setShowNotice(true);
       } catch {
-        // si falló la API, usar mock pero respetar lo que sabemos del authUser
+        // si falla /users/:id
         setUser({
           ...mockUser,
           id: authUser?.id ?? mockUser.id,
           name: authUser?.name ?? mockUser.name,
           email: authUser?.email ?? mockUser.email,
         });
-        const dismissed = localStorage.getItem("fallback_notice_dismissed") === "1";
+        setPosts(mockPosts);
+        setLiked(mockLiked);
+        setPostsCount(mockUser.postsCount);
+        const dismissed = localStorage.getItem('fallback_notice_dismissed') === '1';
         if (!dismissed) setShowNotice(true);
       }
     })();
@@ -116,8 +148,8 @@ export default function DashboardView() {
   if (!user) return <div className="text-white p-6">Loading…</div>;
 
   const counts = {
-    posts: currentUserPosts.length,
-    likes: currentUserLikedPosts.length,
+    posts: postsCount || posts.length,
+    likes: liked.length,
   };
 
   return (
@@ -131,12 +163,12 @@ export default function DashboardView() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-white text-lg md:text-xl font-semibold">
-          {active === "posts" ? "Your Posts" : "Your Likes"}
+          {active === 'posts' ? 'Your Posts' : 'Your Likes'}
         </h2>
         <Tabs active={active} onChange={setActive} counts={counts} />
       </div>
 
-      <MasonryGrid items={active === "posts" ? currentUserPosts : currentUserLikedPosts} />
+      <MasonryGrid items={active === 'posts' ? posts : liked} />
 
       <SubscriptionModal
         open={showSub}
@@ -163,7 +195,7 @@ export default function DashboardView() {
         open={showNotice}
         onClose={() => {
           setShowNotice(false);
-          localStorage.setItem("fallback_notice_dismissed", "1");
+          localStorage.setItem('fallback_notice_dismissed', '1');
         }}
       />
     </div>
