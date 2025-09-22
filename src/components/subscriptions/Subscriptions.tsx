@@ -6,20 +6,19 @@ const Subscriptions = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState<"monthly" | "annual" | null>(null);
 
-    const handleSubscribe = async (plan: "monthly" | "annual") => {
-    if (!user?.email) return alert("Debes estar logueado para suscribirte");
-
-    setLoading(plan);
-    try {
-      const data = await createSubscription(plan, user.email, user.id);
-      if (data?.init_point) window.location.href = data.init_point;
-      else console.error("No se recibió init_point de Mercado Pago");
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(null);
-    }
-  };
+if (!user) return null;
+const handleSubscribe = async (plan: "monthly" | "annual") => {
+  setLoading(plan);
+  try {
+    const data = await createSubscription(plan, user.email, user.id);
+    if (data?.init_point) window.location.href = data.init_point;
+    else console.error("No se recibió init_point de Mercado Pago");
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(null);
+  }
+};
 
   return (
     
@@ -57,7 +56,7 @@ const Subscriptions = () => {
   disabled={loading === "monthly"}
   className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors disabled:opacity-50"
 >
-  {loading === "monthly" ? "Redirigiendo..." : "Choose Monthly"}
+  {loading === "monthly" ? "Redirecting..." : "Choose Monthly"}
 </button>
         </div>
       </div>
@@ -77,7 +76,7 @@ const Subscriptions = () => {
   disabled={loading === "annual"}
   className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors disabled:opacity-50"
 >
-  {loading === "annual" ? "Redirigiendo..." : "Choose Annual"}
+  {loading === "annual" ? "Redirecting..." : "Choose Annual"}
 </button>
     </div>
  
