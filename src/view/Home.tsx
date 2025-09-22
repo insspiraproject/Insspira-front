@@ -1,18 +1,22 @@
 'use client'
 
-
 import PinsList from "@/components/pins/PinsList";
-import { usePinsSearch } from "@/hooks/pins/usePinsSearch";
+import { useSearchContext } from "@/context/SearchContext";
+import { useAuth } from "@/context/AuthContext";
+import { useEffect } from "react";
+import { saveTokenFromQueryAndHydrateAuth } from "@/services/authservice";
 
+export default function Home() {
+  const { results } = useSearchContext();
+  const { setAuth } = useAuth();
 
-const Home = () => {
-  const { results } = usePinsSearch();
+  useEffect(() => {
+    saveTokenFromQueryAndHydrateAuth(setAuth);
+  }, [setAuth]);
 
   return (
     <div>
-        <PinsList searchResults={results} />
+      <PinsList searchResults={results} />
     </div>
   );
-};
-
-export default Home;
+}

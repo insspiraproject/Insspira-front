@@ -14,8 +14,8 @@ const isNonEmpty = (v?: string | null): v is string =>
 const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
   if (!pin) return null;
 
-  const likes = typeof pin.likesCount === "number" ? pin.likesCount : 0;
-  const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
+  const likes = typeof pin.likes === "number" ? pin.likes : 0;
+  const comments = typeof pin.comment === "number" ? pin.comment : 0;
   const user = isNonEmpty(pin.user) ? pin.user : "";
 
   return (

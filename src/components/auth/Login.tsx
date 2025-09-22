@@ -1,4 +1,3 @@
-// src/components/auth/Login.tsx
 "use client";
 
 import { useFormik } from "formik";
@@ -7,6 +6,7 @@ import { LoginInitialValues, LoginValidationSchema } from "@/validators/LoginSch
 import { FcGoogle } from "react-icons/fc";
 import { FiArrowLeft } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
+import { loginWithAuth0 } from "@/services/authservice";
 
 export default function FormLogin() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function FormLogin() {
         const ok = await login(values);
         if (ok) {
           const role = user?.role ?? getRoleFromStorage();
-          router.push(role === "admin" ? "/admin" : "/dashboard"); // <-- antes "/dashboard/admin" y "/home"
+          router.push(role === "admin" ? "/admin" : "/dashboard");
         }
       } finally {
         setSubmitting(false);
@@ -118,10 +118,7 @@ export default function FormLogin() {
 
             <button
               type="button"
-              onClick={() => {
-                // window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google`;
-                console.log("Login with Google");
-              }}
+              onClick={loginWithAuth0}
               className="w-full h-12 rounded-xl bg-white text-[var(--color-violeta)] font-medium border border-white/20 hover:opacity-95 active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
             >
               <FcGoogle className="text-xl" />
