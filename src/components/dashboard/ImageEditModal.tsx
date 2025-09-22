@@ -1,27 +1,29 @@
 // src/components/dashboard/ImageEditModal.tsx
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { FiX, FiUpload } from "react-icons/fi";
+import { useEffect, useState } from 'react';
+import { FiX, FiUpload } from 'react-icons/fi';
 
 export default function ImageEditModal({
   open,
   onClose,
-  onSave,
+  onSave,        // <- ahora entrega File
   currentUrl,
 }: {
   open: boolean;
   onClose: () => void;
-  onSave: (url: string) => void;
+  onSave: (file: File) => void; // <- 👈 cambia a File
   currentUrl: string;
 }) {
   const [preview, setPreview] = useState<string>(currentUrl);
+  const [file, setFile] = useState<File | null>(null);  // <- guardamos el File
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     if (open) {
       setPreview(currentUrl);
+      setFile(null);
       setError(null);
       setDragging(false);
     }
@@ -29,23 +31,24 @@ export default function ImageEditModal({
 
   if (!open) return null;
 
-  const readFile = (file: File) => {
-    const allowed = ["image/png", "image/jpeg", "image/webp"];
-    if (!allowed.includes(file.type)) {
-      setError("Unsupported format. Use PNG, JPG, or WEBP.");
+  const readFile = (f: File) => {
+    const allowed = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!allowed.includes(f.type)) {
+      setError('Unsupported format. Use PNG, JPG, or WEBP.');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      setError("The file exceeds 5MB. Please reduce the size.");
+    if (f.size > 5 * 1024 * 1024) {
+      setError('The file exceeds 5MB. Please reduce the size.');
       return;
     }
     setError(null);
+    setFile(f); // <- guardamos el File real
     const fr = new FileReader();
     fr.onload = () => {
-      const dataUrl = String(fr.result || "");
+      const dataUrl = String(fr.result || '');
       if (dataUrl) setPreview(dataUrl);
     };
-    fr.readAsDataURL(file);
+    fr.readAsDataURL(f);
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +93,7 @@ export default function ImageEditModal({
               onDragLeave={() => setDragging(false)}
               onDrop={handleDrop}
               className={`block cursor-pointer rounded-xl border border-dashed p-6 text-center transition
-                ${dragging ? "border-white bg-white/10" : "border-white/30 bg-white/5 hover:border-white/60"}`}
+                ${dragging ? 'border-white bg-white/10' : 'border-white/30 bg-white/5 hover:border-white/60'}`}
               title="Click or drag an image"
             >
               <input
@@ -104,14 +107,10 @@ export default function ImageEditModal({
                 <FiUpload className="text-2xl" />
               </div>
               <div className="text-sm font-medium">Click or drag an image here</div>
-              <div className="mt-1 text-xs text-white/70">Formats: PNG, JPG or WEBP Â· Max: 5MB</div>
+              <div className="mt-1 text-xs text-white/70">Formats: PNG, JPG or WEBP · Max: 5MB</div>
             </label>
 
-            {error && (
-              <p className="mt-2 text-xs text-red-300">
-                {error}
-              </p>
-            )}
+            {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
           </div>
 
           {/* Circular preview */}
@@ -137,11 +136,11 @@ export default function ImageEditModal({
           </button>
           <button
             onClick={() => {
-              onSave(preview || currentUrl);
+              if (file) onSave(file);   // <- enviamos el File al padre
               onClose();
             }}
             className="px-4 py-2 rounded-lg bg-white text-[var(--color-violeta)]"
-            disabled={!preview || preview === currentUrl}
+            disabled={!file}
           >
             Save
           </button>

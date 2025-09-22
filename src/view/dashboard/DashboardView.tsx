@@ -16,26 +16,21 @@ import {
   currentUserLikedPosts as mockLiked,
   currentUserPosts as mockPosts,
   type UserProfile,
-  type Post, // <- tipo que exige tags: string[]
+  type Post,
 } from '@/mocks/userMocks';
 
 import {
   fetchUserPins,
   fetchUserLikedPins,
-  fetchUserPinsCount,
+  // fetchUserPinsCount, // opcional si confías en posts.length
   type UIPost,
+  getCloudinarySignature,
+  uploadAvatarToCloudinary,
+  setProfilePicture,
+  type BackendUser,
 } from '@/services/dashboard';
 
-type APIUser = {
-  id: string;
-  name?: string | null;
-  username?: string | null;
-  email: string;
-  avatar?: string | null;
-  bio?: string | null;
-  createdAt?: string | Date | null;
-  pinsCount?: number | null;
-};
+type APIUser = BackendUser; // usamos los nombres reales del backend
 
 const API = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
@@ -49,7 +44,6 @@ function toIsoStringSafe(v: string | Date | null | undefined): string | undefine
   }
 }
 
-// ⬇️ ahora incluimos tags para satisfacer el tipo Post
 function uiPostToMockPost(p: UIPost): Post {
   return {
     id: p.id,
@@ -57,7 +51,7 @@ function uiPostToMockPost(p: UIPost): Post {
     imageUrl: p.imageUrl,
     stats: { likes: p.stats.likes, views: p.stats.views },
     createdAt: p.createdAt,
-    tags: p.tags ?? [], // <- clave para evitar el error TS
+    tags: p.tags ?? [],
   };
 }
 
@@ -73,7 +67,6 @@ export default function DashboardView() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [liked, setLiked] = useState<Post[]>([]);
-  const [postsCount, setPostsCount] = useState<number>(0);
 
   useEffect(() => {
     if (!isHydrated || !isAuthenticated || !authUser?.id) return;
@@ -90,39 +83,51 @@ export default function DashboardView() {
           name: backendUser?.name ?? authUser.name ?? mockUser.name,
           username: backendUser?.username ?? mockUser.username,
           email: backendUser?.email ?? authUser.email ?? mockUser.email,
-          avatar: backendUser?.avatar ?? mockUser.avatar,
-          bio: backendUser?.bio ?? mockUser.bio,
+
+          // 🔁 nombres correctos del backend
+          avatar: backendUser?.profilePicture ?? mockUser.avatar,
+          bio: backendUser?.biography ?? mockUser.bio,
+
           joinDate: toIsoStringSafe(backendUser?.createdAt) ?? mockUser.joinDate,
+
+          // lo actualizaremos tras cargar posts reales
           postsCount:
             typeof backendUser?.pinsCount === 'number'
               ? backendUser.pinsCount
               : mockUser.postsCount,
+
+          // de momento siguen mock
           subscription: mockUser.subscription,
           payments: mockUser.payments,
         };
         setUser(merged);
 
-        // 2) posts propios + likes + contador real
+        // 2) posts propios + likes (reales)
         try {
-          const [p, l, c] = await Promise.all([
+          const [p, l] = await Promise.all([
             fetchUserPins(merged.id),
             fetchUserLikedPins(merged.id),
-            fetchUserPinsCount(merged.id),
           ]);
-          setPosts(p.map(uiPostToMockPost));
-          setLiked(l.map(uiPostToMockPost));
-          setPostsCount(c);
+
+          const pUi = p.map(uiPostToMockPost);
+          const lUi = l.map(uiPostToMockPost);
+
+          setPosts(pUi);
+          setLiked(lUi);
+
+          // 🔢 fuente de verdad = cantidad real obtenida
+          setUser((prev) => (prev ? { ...prev, postsCount: pUi.length } : prev));
         } catch {
           // fallback a mocks si falla la API de listados
           setPosts(mockPosts);
           setLiked(mockLiked);
-          setPostsCount(merged.postsCount ?? mockUser.postsCount);
+          setUser((prev) => (prev ? { ...prev, postsCount: mockUser.postsCount } : prev));
         }
 
-        // 3) aviso de fallback si faltan campos
+        // 3) aviso de fallback si faltan campos clave
         const usingFallback =
-          !backendUser?.avatar ||
-          !backendUser?.bio ||
+          !backendUser?.profilePicture ||
+          !backendUser?.biography ||
           !backendUser?.createdAt ||
           backendUser?.pinsCount == null;
         const dismissed = localStorage.getItem('fallback_notice_dismissed') === '1';
@@ -137,7 +142,6 @@ export default function DashboardView() {
         });
         setPosts(mockPosts);
         setLiked(mockLiked);
-        setPostsCount(mockUser.postsCount);
         const dismissed = localStorage.getItem('fallback_notice_dismissed') === '1';
         if (!dismissed) setShowNotice(true);
       }
@@ -148,8 +152,29 @@ export default function DashboardView() {
   if (!user) return <div className="text-white p-6">Loading…</div>;
 
   const counts = {
-    posts: postsCount || posts.length,
+    posts: posts.length, // 👈 contador real
     likes: liked.length,
+  };
+
+  // 🖼️ flujo para guardar avatar en backend
+  const handleSaveAvatar = async (file: File) => {
+    try {
+      const sig = await getCloudinarySignature();
+      const { secure_url, public_id } = await uploadAvatarToCloudinary(file, sig);
+      const updated = await setProfilePicture(user.id, public_id); // backend devuelve User
+
+      setUser((prev) =>
+        prev
+          ? {
+              ...prev,
+              // Preferimos el valor del backend, si no viene usamos secure_url
+              avatar: updated.profilePicture ?? secure_url ?? prev.avatar,
+            }
+          : prev
+      );
+    } catch (e) {
+      console.error('Error updating avatar:', e);
+    }
   };
 
   return (
@@ -181,7 +206,7 @@ export default function DashboardView() {
         open={showAvatar}
         onClose={() => setShowAvatar(false)}
         currentUrl={user.avatar}
-        onSave={(url) => setUser((prev) => (prev ? { ...prev, avatar: url } : prev))}
+        onSave={handleSaveAvatar} // 👈 ahora sube y guarda en backend
       />
 
       <ProfileEditModal
