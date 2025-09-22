@@ -1,8 +1,25 @@
 'use client'
+import { useState } from "react";
+import { createSubscription } from "@/services/subscriptionservice"
+import { useAuth } from "@/context/AuthContext";
+const Subscriptions = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState<"monthly" | "annual" | null>(null);
 
-const Subscriptions = ()=> {
+    const handleSubscribe = async (plan: "monthly" | "annual") => {
+    if (!user?.email) return alert("Debes estar logueado para suscribirte");
 
-
+    setLoading(plan);
+    try {
+      const data = await createSubscription(plan, user.email, user.id);
+      if (data?.init_point) window.location.href = data.init_point;
+      else console.error("No se recibió init_point de Mercado Pago");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(null);
+    }
+  };
 
   return (
     
@@ -35,9 +52,13 @@ const Subscriptions = ()=> {
             <li>✔ Access to all content</li>
             <li>✔ Some premium features</li>
           </ul>
-          <button className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors">
-            Choose Monthly
-          </button>
+          <button
+  onClick={() => handleSubscribe("monthly")}
+  disabled={loading === "monthly"}
+  className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors disabled:opacity-50"
+>
+  {loading === "monthly" ? "Redirigiendo..." : "Choose Monthly"}
+</button>
         </div>
       </div>
 
@@ -51,9 +72,13 @@ const Subscriptions = ()=> {
         <li>✔ Access to all content</li>
         <li>✔ All premium features</li>
       </ul>
-      <button className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors">
-        Choose Annual
-      </button>
+      <button
+  onClick={() => handleSubscribe("annual")}
+  disabled={loading === "annual"}
+  className="w-full bg-[var(--color-morado)] text-white py-2 rounded-full hover:bg-[var(--color-rosa)] transition-colors disabled:opacity-50"
+>
+  {loading === "annual" ? "Redirigiendo..." : "Choose Annual"}
+</button>
     </div>
  
 

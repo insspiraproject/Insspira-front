@@ -1,11 +1,5 @@
 import axios from "axios";
-
 export async function createSubscription(plan: "monthly" | "annual", email: string, userId?: string) {
-  const response = await axios.post("http://localhost:3001/mercadopago/subscription", {
-    plan,
-    email,
-    userId,
-  });
-
-  return response.data; // acá viene { success, id, init_point, ... }
+  const response = await axios.post(`https://api-latest-ejkf.onrender.com/subscriptions/${plan}`, { email, userId });
+  return response.data; 
 }
