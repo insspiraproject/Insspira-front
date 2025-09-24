@@ -35,10 +35,10 @@ type AxiosLikeError = {
   response?: { status?: number; statusText?: string; data?: unknown };
 };
 
-interface PinUserSlim {
-  name?: string | null;
-  username?: string | null;
-}
+// interface PinUserSlim {
+//   name?: string | null;
+//   username?: string | null;
+// }
 
 export interface UIPinModal {
   id: string;
@@ -54,10 +54,10 @@ interface PinByIdResponse {
   id: string;
   image: string;
   description?: string | null;
-  likesCount?: number;
-  commentsCount?: number;
-  viewsCount?: number;
-  user?: PinUserSlim | null;
+  likes?: number;
+  comment?: number;
+  name: string;
+  views: number;
 }
 // ✅ sin any: estrecha a un tipo auxiliar
 function explainAxiosError(err: unknown) {
@@ -73,7 +73,15 @@ function explainAxiosError(err: unknown) {
 export const getAllPins = async (): Promise<IPins[]> => {
   try {
     const { data } = await api.get<IPins[]>("/pins");
-    return data;
+    return data.map((pin: any) => ({
+      id: pin.id,
+      image: pin.image,
+      description: pin.description,
+      likesCount: pin.likesCount,       
+      commentsCount: pin.commentsCount,  
+      views: pin.viewsCount,
+      user: pin.user,
+    }));
   } catch (error) {
     console.error("Error getting pins:", explainAxiosError(error));
     return [];
@@ -88,12 +96,12 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
 
     return {
       id: data.id,
-      name: data.user?.name ?? data.user?.username ?? "Unknown",
+      name: data.name,
       image: data.image,
       description: data.description ?? null,
-      likes: typeof data.likesCount === "number" ? data.likesCount : 0,
-      comment: typeof data.commentsCount === "number" ? data.commentsCount : 0,
-      views: typeof data.viewsCount === "number" ? data.viewsCount : 0,
+      likes: data.likes ?? 0,      
+      comment: data.comment ?? 0,  
+      views: data.views ?? 0,      
     };
   } catch (err) {
     console.error("getPinById failed:", err);
@@ -188,13 +196,13 @@ export const addLike = async (pinId: string) => {
 
   try {
     const response = await api.post(
-      `/like/${pinId}`,
+      `/pins/like/${pinId}`,
       {},
       {
         headers: { Authorization: `Bearer ${token}` }
       }
     );
-    console.log('Authorization header:', `Bearer ${token}`)
+    console.log("id: ", pinId, response);
     return response;
   } catch (error) {
     console.error("error when giving like", error);

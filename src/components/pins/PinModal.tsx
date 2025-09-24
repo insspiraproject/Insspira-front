@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { getPinById } from "@/services/pins.services";
+import { getPinById, addLike } from "@/services/pins.services";
 import Image from "next/image";
 import { IoClose } from "react-icons/io5";
 import { FcLike } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
-import { addLike } from "@/services/pins.services";
 
 interface PinModalProps {
   id: string;
@@ -14,7 +13,7 @@ interface PinModalProps {
 }
 
 interface PinModal {
-  id:string;
+  id: string;
   name: string;
   image: string;
   description?: string | null;
@@ -50,7 +49,10 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
       <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
         <div className="bg-white p-6 rounded-lg">
           <p>No se encontró el pin</p>
-          <button onClick={onClose} className="mt-4 bg-[] text-white px-4 py-2 rounded">
+          <button
+            onClick={onClose}
+            className="mt-4 bg-gray-700 text-white px-4 py-2 rounded"
+          >
             Cerrar
           </button>
         </div>
@@ -59,54 +61,59 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center">
-      <div className="bg-gradient-to-r from-[#0E172B]/90 to-[#1B273B] rounded-lg flex h-[550px] w-auto">
-        {/* Container izquierda: Imagen */}
-        <div className="relative w-auto h-full flex-shrink-0">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+      <div
+        className="bg-gradient-to-r from-[#0E172B]/90 to-[#1B273B] rounded-lg 
+                   flex flex-col md:flex-row w-full max-w-[900px] max-h-[90%] 
+                   shadow-xl shadow-slate-800/50 overflow-hidden relative"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 md:top-3 md:right-3 z-10 text-white hover:text-gray-300"
+        >
+          <IoClose size={28} color="--color-gris"/>
+        </button>
+
+        {/* Imagen */}
+        <div className="relative w-full md:w-1/2 h-64 md:h-auto flex-shrink-0">
           <Image
             src={pin.image}
             alt="Pin photo"
-            width={300}
-            height={550}
-            className="object-cover h-full rounded-l-lg"
+            fill
+            className="object-cover rounded-t-lg md:rounded-l-lg md:rounded-t-none"
           />
         </div>
-  
-        {/* Container derecha: Contenido */}
-        <div className="w-[350px] p-6 flex flex-col h-full relative">
-          
-          {/* Botón cerrar */}
-            <IoClose className="absolute top-4 right-4"
-            size={40} color="white"
-            onClick={onClose}/>
-  
-          {/* Contenido principal */}
-          <div className="mt-2 text-[var(--color-blanco)]">
-            {/* <h3>{pin.userame}</h3> */}
-            <div className="flex justify-baseline items-center">
-                <h3 className="font-[montserrat] text-lg ml-2">
-                  {pin.name}
-                </h3>
-            </div>
-            <p className="mt-2">{pin.description}</p>
-          </div>
-          {/*Comentarios */}
-          
-          <div className="w-[95%] h-[85%] border-[var(--color-gris)] border-2 rounded-t-lg mt-2">
-            
-          </div>
-          <div className="w-[95%] h-[35px] border-[var(--color-gris)] border-2 rounded-b-lg">
-              <input className="text-[var(--color-blanco)] w-full h-full pl-2 rounded-b-lg"
-              type="text" placeholder="Make a comment"/>
-            </div>
 
-          <div className="flex justify-baseline items-center text-white">
-            <div className="flex justify-baseline items-center">
-              <FcLike onClick={() => addLike(pin.id)}/>
-              <span className="ml-1">{pin.likes}</span>
+        {/* Contenido */}
+        <div className="w-full md:w-1/2 p-4 flex flex-col text-white overflow-y-auto">
+          <h3 className="font-[montserrat] text-lg mb-2">{pin.name}</h3>
+          <p className="mb-4">{pin.description}</p>
+
+          {/* Caja de comentarios */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="w-full h-40 md:h-56 border border-gray-500 rounded-t-lg mb-2 overflow-y-auto">
+              {/* Aquí irían los comentarios */}
             </div>
-            <div className="flex justify-baseline items-center ml-2">
-              <AiOutlineEye/>
+            <div className="w-full h-10 border border-gray-500 rounded-b-lg">
+              <input
+                className="bg-transparent text-white w-full h-full px-2 outline-none"
+                type="text"
+                placeholder="Haz un comentario..."
+              />
+            </div>
+          </div>
+
+          {/* Likes y Views */}
+          <div className="flex items-center mt-4 space-x-4">
+            <button
+              className="flex items-center hover:text-pink-500"
+              onClick={() => addLike(id)}
+            >
+              <FcLike size={24} />
+              <span className="ml-1">{pin.likes}</span>
+            </button>
+            <div className="flex items-center">
+              <AiOutlineEye size={22} />
               <span className="ml-1">{pin.views}</span>
             </div>
           </div>
@@ -114,8 +121,6 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
       </div>
     </div>
   );
-  
-  
 };
 
 export default PinModal;

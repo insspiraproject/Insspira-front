@@ -14,9 +14,8 @@ const isNonEmpty = (v?: string | null): v is string =>
 const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
   if (!pin) return null;
 
-  const likes = typeof pin.likes === "number" ? pin.likes : 0;
-  const comments = typeof pin.comment === "number" ? pin.comment : 0;
-  const user = isNonEmpty(pin.user) ? pin.user : "";
+  const likes = typeof pin.likesCount === "number" ? pin.likesCount : 0;
+  const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
 
   return (
     <div
@@ -37,7 +36,10 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
       <div className="flex flex-col text-xs md:text-sm bg-[var(--color-rosa)] p-2 rounded-b-xl mb-6">
         <div className="flex items-center mb-2">
           <div className="flex items-center mr-4">
-            <FcLike size={18} className="md:size-[20px]" onClick={() => addLike(pin.id)}/>
+            <button className="hover:bg-green-500"
+            onClick={() => addLike(pin.id)}>
+              <FcLike size={18} className="md:size-[20px]"/>
+            </button>
             <span className="ml-1">{likes}</span>
           </div>
           <div className="flex items-center">
@@ -45,7 +47,6 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
             <span className="ml-1">{comments}</span>
           </div>
         </div>
-        <p className="font-bold">{user}</p>
         <span className="font-semibold">
           {isNonEmpty(pin.description) ? pin.description : ""}
         </span>
