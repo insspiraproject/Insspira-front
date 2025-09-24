@@ -73,13 +73,13 @@ function explainAxiosError(err: unknown) {
 export const getAllPins = async (): Promise<IPins[]> => {
   try {
     const { data } = await api.get<IPins[]>("/pins");
-    return data.map((pin: any) => ({
+    return data.map((pin: IPins) => ({
       id: pin.id,
       image: pin.image,
       description: pin.description,
       likesCount: pin.likesCount,       
       commentsCount: pin.commentsCount,  
-      views: pin.viewsCount,
+      views: pin.views,
       user: pin.user,
     }));
   } catch (error) {
