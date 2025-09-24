@@ -128,7 +128,8 @@ export const RegisterUser = async (
   userData: RegisterFormValues
 ): Promise<RegisterResponse | null> => {
   try {
-    const { ok, data, error } = await postJSON<RegisterFormValues>(`${API_BASE}/auth/register`, userData);
+    console.log("URL: ", API_BASE)
+    const { ok, data, error } = await postJSON<RegisterFormValues>(`${API_BASE}auth/register`, userData);
     if (!ok) {
       toast.error(error ?? "Registration failed");
       return null;
