@@ -174,7 +174,7 @@ export const LoginUser = async (
 // Redirige a la ruta de login del proveedor (Auth0) expuesta en tu backend (por ejemplo /login)
 export function loginWithAuth0(): void {
   const path = process.env.NEXT_PUBLIC_AUTH0_LOGIN_PATH || "login";
-  window.location.href = `${API_BASE}${path}`;
+  window.location.href = `${API_BASE}home`;
 }
 
 // Guarda ?token=... (callback de Auth0) y actualiza el AuthContext con setAuth
