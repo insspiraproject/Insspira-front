@@ -77,17 +77,17 @@ function toUIPost(p: BackendPin): UIPost {
 
 /* ================= Endpoints dashboard ================= */
 export async function fetchUserPins(userId: string, page = 1, limit = 20): Promise<UIPost[]> {
-  const { data } = await api.get<BackendPin[]>(`/users/${userId}/pins`, { params: { page, limit } });
+  const { data } = await api.get<BackendPin[]>(`users/${userId}/pins`, { params: { page, limit } });
   return (data ?? []).map(toUIPost);
 }
 
 export async function fetchUserLikedPins(userId: string, page = 1, limit = 20): Promise<UIPost[]> {
-  const { data } = await api.get<BackendPin[]>(`/users/${userId}/liked-pins`, { params: { page, limit } });
+  const { data } = await api.get<BackendPin[]>(`users/${userId}/liked-pins`, { params: { page, limit } });
   return (data ?? []).map(toUIPost);
 }
 
 export async function fetchUserPinsCount(userId: string): Promise<number> {
-  const { data } = await api.get<number>(`/users/${userId}/pins-count`);
+  const { data } = await api.get<number>(`users/${userId}/pins-count`);
   return typeof data === 'number' ? data : 0;
 }
 
@@ -104,7 +104,7 @@ export async function updateUserBasics(id: string, payload: UpdateUserPayload) {
 }
 
 export async function setProfilePicture(id: string, publicId: string) {
-  const { data } = await api.patch(`/users/${id}/profile-picture`, { publicId });
+  const { data } = await api.patch(`users/${id}/profile-picture`, { publicId });
   return data as BackendUser; // devuelve el usuario actualizado
 }
 
@@ -113,7 +113,7 @@ const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
 
 export async function getCloudinarySignature() {
-  const { data } = await api.get('/files/signature');
+  const { data } = await api.get('files/signature');
   return data as { signature: string; timestamp: number; folder: string };
 }
 

@@ -65,7 +65,7 @@ async function getUserFromToken(accessToken: string): Promise<AuthUser | null> {
     const id = payload?.sub;
     if (!id) return null;
 
-    const res = await fetch(`${API_BASE}/users/${id}`);
+    const res = await fetch(`${API_BASE}users/${id}`);
     if (!res.ok) return null;
     const u = (await res.json()) as APIUser;
     return {
@@ -151,7 +151,7 @@ export const LoginUser = async (
   userData: LoginFormValues
 ): Promise<LoginResponse | null> => {
   try {
-    const { ok, data, error } = await postJSON<LoginFormValues>(`${API_BASE}/auth/login`, userData);
+    const { ok, data, error } = await postJSON<LoginFormValues>(`${API_BASE}auth/login`, userData);
     if (!ok) {
       toast.error(error ?? "Login failed");
       return null;
@@ -210,7 +210,7 @@ export async function getMe(): Promise<AuthUser | null> {
       (typeof window !== "undefined" && (localStorage.getItem("auth:token") || localStorage.getItem("token"))) ||
       null;
 
-    const res = await fetch(`${API_BASE}/auth/me`, {
+    const res = await fetch(`${API_BASE}auth/me`, {
       method: "GET",
       credentials: "include", // por si tu back usa cookie de Auth0
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,

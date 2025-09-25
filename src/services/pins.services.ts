@@ -72,7 +72,7 @@ function explainAxiosError(err: unknown) {
 
 export const getAllPins = async (): Promise<IPins[]> => {
   try {
-    const { data } = await api.get<IPins[]>("/pins");
+    const { data } = await api.get<IPins[]>("pins");
     return data.map((pin: IPins) => ({
       id: pin.id,
       image: pin.image,
@@ -92,7 +92,7 @@ export const getAllPins = async (): Promise<IPins[]> => {
 export async function getPinById(id: string): Promise<UIPinModal | null> {
   try {
     // OJO: tu back es /pins/:id (con S)
-    const { data } = await api.get<PinByIdResponse>(`/pins/${id}`);
+    const { data } = await api.get<PinByIdResponse>(`pins/${id}`);
 
     return {
       id: data.id,
@@ -111,7 +111,7 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
 
 export const searchPins = async (query: string): Promise<IPins[]> => {
   try {
-    const { data } = await api.get<IPins[]>("/pins/search", { params: { q: query } });
+    const { data } = await api.get<IPins[]>("pins/search", { params: { q: query } });
     return data;
   } catch (error) {
     console.error("Error searching pins:", explainAxiosError(error));
@@ -121,7 +121,7 @@ export const searchPins = async (query: string): Promise<IPins[]> => {
 
 export const getCategories = async (): Promise<ICategory[]> => {
   try {
-    const { data } = await api.get<ICategory[]>("/category");
+    const { data } = await api.get<ICategory[]>("category");
     return data;
   } catch (error) {
     console.error("Error fetching categories:", explainAxiosError(error));
@@ -130,7 +130,7 @@ export const getCategories = async (): Promise<ICategory[]> => {
 };
 
 export const getCloudinarySignature = async () => {
-  const { data } = await api.get("/files/signature");
+  const { data } = await api.get("files/signature");
   return data as { signature: string; timestamp: number; folder: string };
 };
 
@@ -175,7 +175,7 @@ export const savePin = async (pin: IUploadPin | UploadPayload) => {
       description: (pin as IUploadPin).description, // esto sí está en tu interfaz
       categoryId: readStringKey(pin, "categoryId"),
     };
-    const { data } = await api.post("/pins", payload);
+    const { data } = await api.post("pins", payload);
     return data;
   } catch (error) {
     console.error("Error creating pin:", explainAxiosError(error));
