@@ -209,7 +209,7 @@ export async function getMe(): Promise<AuthUser | null> {
       (typeof window !== "undefined" && (localStorage.getItem("auth:token") || localStorage.getItem("token"))) ||
       null;
 
-    const res = await fetch(`${API_BASE}auth/me`, {
+    const res = await fetch(`https://api-latest-ejkf.onrender.com/auth/me`, {
       method: "GET",
       credentials: "include", // por si tu back usa cookie de Auth0
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
