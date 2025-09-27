@@ -188,7 +188,8 @@ export async function saveTokenFromQueryAndHydrateAuth(
   const token = url.searchParams.get("token");
   if (!token) return;
 
-  localStorage.setItem("auth:token", token);
+  const saveToken = localStorage.setItem("auth:token", token);
+  console.log(saveToken, token)
   const user = await getUserFromToken(token);
   if (user) localStorage.setItem("auth:user", JSON.stringify(user));
   setAuth(user ?? null, token);
