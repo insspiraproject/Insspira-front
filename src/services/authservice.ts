@@ -174,7 +174,7 @@ export const LoginUser = async (
 // Redirige a la ruta de login del proveedor (Auth0) expuesta en tu backend (por ejemplo /login)
 export function loginWithAuth0(): void {
   const path = "login";
-  window.location.href = `${API_BASE}${path}`;
+  window.location.href = `https://api-latest-ejkf.onrender.com/login`;
 }
 
 // Guarda ?token=... (callback de Auth0) y actualiza el AuthContext con setAuth
