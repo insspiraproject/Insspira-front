@@ -98,7 +98,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
               <input
                 className="bg-transparent text-white w-full h-full px-2 outline-none"
                 type="text"
-                placeholder="Haz un comentario..."
+                placeholder="Add comment..."
               />
             </div>
           </div>

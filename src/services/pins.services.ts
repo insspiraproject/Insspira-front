@@ -183,7 +183,7 @@ export const savePin = async (pin: IUploadPin | UploadPayload) => {
   }
 };
 
-
+// --- Add Like ---
 export const addLike = async (pinId: string) => {
   const token = localStorage.getItem("auth:token")
   console.log(token)
@@ -197,7 +197,6 @@ export const addLike = async (pinId: string) => {
   try {
     const response = await api.post(
       `/pins/like/${pinId}`,
-      {},
       {
         headers: { Authorization: `Bearer ${token}` }
       }
@@ -207,5 +206,29 @@ export const addLike = async (pinId: string) => {
   } catch (error) {
     console.error("error when giving like", error);
     return null;
+  }
+}
+
+// --- Delete Like ---
+export const deleteLike = async (pinId: string) => {
+  const token = localStorage.getItem("auth:token");
+  console.log(token);
+  
+  if(!pinId) return null
+  if(!token) {
+     console.log("JWT not found")
+  }
+
+  try {
+    const response = axios.delete(
+      `/pins/like/${pinId}`,
+      {
+        headers: { Authorization: `Bearer ${token}`}
+      },
+    )
+    return response;
+  } catch (error) {
+    console.error("Error when delete like: ", error);
+    return null
   }
 }
