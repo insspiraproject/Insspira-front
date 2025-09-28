@@ -151,7 +151,7 @@ export const LoginUser = async (
   userData: LoginFormValues
 ): Promise<LoginResponse | null> => {
   try {
-    const { ok, data, error } = await postJSON<LoginFormValues>(`https://api-latest-ejkf.onrender.com/auth/login`, userData);
+    const { ok, data, error } = await postJSON<LoginFormValues>(`auth/login`, userData);
     if (!ok) {
       toast.error(error ?? "Login failed");
       return null;
@@ -174,9 +174,9 @@ export const LoginUser = async (
 // Redirige a la ruta de login del proveedor (Auth0) expuesta en tu backend (por ejemplo /login)
 export function loginWithAuth0(): void {
   const redirige = `https://api-latest-ejkf.onrender.com/login`;
-  const redireccion = window.location.href = redirige;
+  const redireccion = window.location.href;
 
-  console.log("Redireccion: ", redireccion);
+  console.log("Redireccion: ", redirige);
 }
 
 // Guarda ?token=... (callback de Auth0) y actualiza el AuthContext con setAuth
@@ -187,10 +187,13 @@ export async function saveTokenFromQueryAndHydrateAuth(
   const url = new URL(window.location.href);
   const token = url.searchParams.get("token");
   if (!token) return;
+  console.log("url: ", url)
+  console.log("token: ", token);
 
   const saveToken = localStorage.setItem("auth:token", token);
   console.log(saveToken, token)
   const user = await getUserFromToken(token);
+  console.log("User: " ,user)
   if (user) localStorage.setItem("auth:user", JSON.stringify(user));
   setAuth(user ?? null, token);
 
@@ -212,12 +215,16 @@ export async function getMe(): Promise<AuthUser | null> {
     const token =
       (typeof window !== "undefined" && (localStorage.getItem("auth:token") || localStorage.getItem("token"))) ||
       null;
+    
+      console.log("Se trae el token del local: ", token);
 
     const res = await fetch(`https://api-latest-ejkf.onrender.com/auth/me`, {
       method: "GET",
       credentials: "include", // por si tu back usa cookie de Auth0
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
+
+    console.log("res: ", res);
 
     const data = await safeJson<MeResponse>(res);
     // si el back retorna un 'user' ya normalizado
@@ -230,13 +237,14 @@ export async function getMe(): Promise<AuthUser | null> {
         role: u.isAdmin ? "admin" : "user",
       };
     }
+    console.log("data: ", data);
 
     // fallback: si tenemos token, decodificamos y completamos llamando /users/:id
     if (token) {
       const user = await getUserFromToken(token);
       if (user) return user;
     }
-
+    console.log("getMe se ejecuta");
     return null;
   } catch {
     return null;
