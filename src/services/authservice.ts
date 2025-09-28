@@ -151,7 +151,7 @@ export const LoginUser = async (
   userData: LoginFormValues
 ): Promise<LoginResponse | null> => {
   try {
-    const { ok, data, error } = await postJSON<LoginFormValues>(`auth/login`, userData);
+    const { ok, data, error } = await postJSON<LoginFormValues>(`https://api-latest-ejkf.onrender.com/auth/login`, userData);
     if (!ok) {
       toast.error(error ?? "Login failed");
       return null;
