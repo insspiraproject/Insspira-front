@@ -129,7 +129,7 @@ export const RegisterUser = async (
 ): Promise<RegisterResponse | null> => {
   try {
     console.log("URL: ", API_BASE)
-    const { ok, data, error } = await postJSON<RegisterFormValues>(`${API_BASE}auth/register`, userData);
+    const { ok, data, error } = await postJSON<RegisterFormValues>(`https://api-latest-ejkf.onrender.com/auth/register`, userData);
     if (!ok) {
       toast.error(error ?? "Registration failed");
       return null;
@@ -151,7 +151,7 @@ export const LoginUser = async (
   userData: LoginFormValues
 ): Promise<LoginResponse | null> => {
   try {
-    const { ok, data, error } = await postJSON<LoginFormValues>(`${API_BASE}auth/login`, userData);
+    const { ok, data, error } = await postJSON<LoginFormValues>(`https://api-latest-ejkf.onrender.com/auth/login`, userData);
     if (!ok) {
       toast.error(error ?? "Login failed");
       return null;
