@@ -174,30 +174,63 @@ export const LoginUser = async (
 // Redirige a la ruta de login del proveedor (Auth0) expuesta en tu backend (por ejemplo /login)
 export function loginWithAuth0(): void {
   const redirige = `https://api-latest-ejkf.onrender.com/login`;
-  const redireccion = window.location.href;
+  window.location.href = redirige;
 
-  console.log("Redireccion: ", redirige);
+  console.log("Redireccion: ", window.location.href);
 }
 
 // Guarda ?token=... (callback de Auth0) y actualiza el AuthContext con setAuth
+// export async function saveTokenFromQueryAndHydrateAuth(
+//   setAuth: (user: AuthUser | null, token: string | null) => void
+// ): Promise<void> {
+//   if (typeof window === "undefined") return;
+//   const url = new URL(window.location.href);
+//   const token = url.searchParams.get("code");
+//   if (!token) return;
+//   console.log("url: ", url)
+//   console.log("token: ", token);
+
+//   const saveToken = localStorage.setItem("auth:token", token);
+//   console.log(saveToken, token)
+//   const user = await getUserFromToken(token);
+//   console.log("User: " ,user)
+//   if (user) localStorage.setItem("auth:user", JSON.stringify(user));
+//   setAuth(user ?? null, token);
+
+//   url.searchParams.delete("token");
+//   window.history.replaceState({}, document.title, url.toString());
+// }
+
 export async function saveTokenFromQueryAndHydrateAuth(
   setAuth: (user: AuthUser | null, token: string | null) => void
 ): Promise<void> {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
-  const token = url.searchParams.get("token");
-  if (!token) return;
-  console.log("url: ", url)
-  console.log("token: ", token);
+  const code = url.searchParams.get("code");
+  if (!code) return;
 
-  const saveToken = localStorage.setItem("auth:token", token);
-  console.log(saveToken, token)
+  console.log("url: ", url)
+  console.log("code: ", code);
+
+  // 1. Mandar el code a tu backend
+  const res = await fetch(`${API_BASE}auth/callback?code=${code}`, {
+    credentials: "include",
+  });
+  const data = await res.json();
+
+  // 2. Obtener el token real que tu backend devuelve
+  const token = data.token;
+  if (!token) return;
+
+  // 3. Guardar y decodificar como antes
+  localStorage.setItem("auth:token", token);
   const user = await getUserFromToken(token);
-  console.log("User: " ,user)
   if (user) localStorage.setItem("auth:user", JSON.stringify(user));
   setAuth(user ?? null, token);
 
-  url.searchParams.delete("token");
+  // 4. Limpiar la URL
+  url.searchParams.delete("code");
+  url.searchParams.delete("state");
   window.history.replaceState({}, document.title, url.toString());
 }
 
