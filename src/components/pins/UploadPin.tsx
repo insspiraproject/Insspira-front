@@ -84,7 +84,7 @@ export default function UploadPin() {
     fetchCategories();
   }, []);
   const handleUpload = async () => {
-    if (!file) {
+    if (!file || !description.trim() || !categoryId) {
       setError("Choose a file.");
       return;
     }
@@ -109,9 +109,14 @@ export default function UploadPin() {
       
 
 
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong.");
+    } catch (err: any) {
+  if (err.response?.status === 403) {
+    toast.error( "You have reached your daily limit. Please Subscribe.");
+    
+  } else {
+    setError("Something went wrong.");
+    
+  }
     } finally {
       setUploading(false);
     }
@@ -186,8 +191,10 @@ export default function UploadPin() {
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            
             className="w-full mt-1 p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 outline-none focus:border-white/40"
             placeholder="share your thoughts..."
+            
           />
         </label>
         <input
