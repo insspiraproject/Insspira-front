@@ -13,7 +13,7 @@ const { user } = useAuth();
     {
       type: "monthly" as const,
       name: "Monthly Plan",
-      price: 10,
+      price: 0.10,
       currency: "USD",
       description: "Pay month-to-month",
       features: "Unlimited pins, likes, saves, and comments"
@@ -21,7 +21,7 @@ const { user } = useAuth();
     {
       type: "annual" as const,
       name: "Annual Plan",
-      price: 100,
+      price: 0.30,
       currency: "USD",
       description: "Save 20% with yearly payment",
       features: "Unlimited pins, likes, saves, and comments"
@@ -31,7 +31,6 @@ const { user } = useAuth();
     
 
 const handleSubscribe = async (plan: PlanType) => {
-  console.log("🚀 user:", user);
 
     if (!user) return toast.info("Debes estar logueado para suscribirte");
 
@@ -39,18 +38,20 @@ const handleSubscribe = async (plan: PlanType) => {
 
     try {
           const res = await createSubscription(plan, user.email, user.id);
-    console.log("📦 Respuesta de createSubscription:", res);
-
+    
     const init_point = res?.init_point;
     if (!init_point) {
-      console.error("❌ No se generó sandbox_init_point:", res);
       return toast.error("No se pudo iniciar el pago. Intenta nuevamente.");
     }
     window.location.href = init_point;
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || "Error iniciando el pago");
-    } finally {
+    } catch (err: unknown) {
+  console.error(err);
+
+  const message = err instanceof Error ? err.message : "Failed to initiate the payment. Please try again.";
+
+  toast.error(message);
+}
+   finally {
       setLoadingPlan(null);
     }
   };

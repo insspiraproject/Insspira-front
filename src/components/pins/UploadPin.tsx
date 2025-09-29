@@ -32,27 +32,30 @@ export default function UploadPin() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
  
-  useEffect(() => {
+useEffect(() => {
   if (!file) return;
 
   // Solo corre en navegador
-  if (typeof window !== "undefined") {
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+  const url = URL.createObjectURL(file);
+  setPreviewUrl(url);
 
-    return () => URL.revokeObjectURL(url);
-  }
-}, [file]);
-  const selectFile = (f: File) => {
-    const validationError = validateFile(f);
-    if (validationError) {
-      setError(validationError);
-      setFile(null);
-      return;
-    }
-    setError(null);
-    setFile(f);
+  // Revocar solo cuando el componente se desmonte o cambie el archivo
+  return () => {
+    URL.revokeObjectURL(url);
   };
+}, [file]);
+
+const selectFile = (f: File) => {
+  const validationError = validateFile(f);
+  if (validationError) {
+    setError(validationError);
+    setFile(null);
+    setPreviewUrl(null); // limpiar preview si hay error
+    return;
+  }
+  setError(null);
+  setFile(f);
+};
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -85,7 +88,7 @@ export default function UploadPin() {
   }, []);
   const handleUpload = async () => {
     if (!file || !description.trim() || !categoryId) {
-      setError("Choose a file.");
+      setError("All fields are required.");
       return;
     }
     setError(null);
@@ -109,10 +112,14 @@ export default function UploadPin() {
       
 
 
-    } catch (err: any) {
-  if (err.response?.status === 403) {
-    toast.error( "You have reached your daily limit. Please Subscribe.");
-    
+    } catch (err: unknown) {
+    // Type guard para AxiosError
+    if (err && typeof err === "object" && "response" in err) {
+      const axiosError = err as { response?: { status?: number } };
+      if (axiosError.response?.status === 403) {
+        toast.error("You have reached your daily limit. Please subscribe.");
+        return;
+      }
   } else {
     setError("Something went wrong.");
     
