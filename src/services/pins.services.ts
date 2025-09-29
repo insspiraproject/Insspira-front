@@ -3,6 +3,8 @@ import axios, { type AxiosRequestHeaders } from "axios";
 import type { IPins } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -194,17 +196,20 @@ export const addLike = async (pinId: string) => {
     return null;
   }
 
-  try {
-    const response = await api.post(
-      `/pins/like/${pinId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
-    console.log("id: ", pinId, response);
+   try {
+    const response = await api.post(`/pins/like/${pinId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response;
-  } catch (error) {
-    console.error("error when giving like", error);
+  } catch (err) {
+    const error = err as AxiosError
+    const status = error?.response?.status;
+
+    if (status === 403 || status === 429) {
+      toast.error("Has alcanzado el límite de likes de tu plan.");
+    } else {
+      toast.error("Error al dar like, intenta nuevamente.");
+    }
     return null;
   }
 }
