@@ -41,12 +41,12 @@ const handleSubscribe = async (plan: PlanType) => {
           const res = await createSubscription(plan, user.email, user.id);
     console.log("📦 Respuesta de createSubscription:", res);
 
-    const sandbox_init_point = res?.sandbox_init_point;
-    if (!sandbox_init_point) {
+    const init_point = res?.init_point;
+    if (!init_point) {
       console.error("❌ No se generó sandbox_init_point:", res);
       return toast.error("No se pudo iniciar el pago. Intenta nuevamente.");
     }
-    window.location.href = sandbox_init_point;
+    window.location.href = init_point;
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Error iniciando el pago");
