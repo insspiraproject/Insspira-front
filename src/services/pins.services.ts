@@ -159,16 +159,12 @@ type UploadPayload = Pick<IUploadPin, "description"> & {
 
 // --- Crear Pin ---
 export const savePin = async (pin: IUploadPin | UploadPayload) => {
-  try {
-    const payload = {
-      image: readStringKey(pin, "image") ?? readStringKey(pin, "imageUrl"),
-      description: (pin as IUploadPin).description, // esto sí está en tu interfaz
-      categoryId: readStringKey(pin, "categoryId"),
-    };
-    const { data } = await api.post("/pins", payload);
-    return data;
-  } catch (error) {
-    console.error("Error creating pin:", explainAxiosError(error));
-    throw error;
-  }
+  const payload = {
+    image: readStringKey(pin, "image") ?? readStringKey(pin, "imageUrl"),
+    description: (pin as IUploadPin).description,
+    categoryId: readStringKey(pin, "categoryId"),
+  };
+
+  const { data } = await api.post("/pins", payload);
+  return data;
 };
