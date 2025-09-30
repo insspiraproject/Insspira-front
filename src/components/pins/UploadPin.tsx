@@ -32,27 +32,30 @@ export default function UploadPin() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
  
-  useEffect(() => {
+useEffect(() => {
   if (!file) return;
 
   // Solo corre en navegador
-  if (typeof window !== "undefined") {
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
+  const url = URL.createObjectURL(file);
+  setPreviewUrl(url);
 
-    return () => URL.revokeObjectURL(url);
-  }
-}, [file]);
-  const selectFile = (f: File) => {
-    const validationError = validateFile(f);
-    if (validationError) {
-      setError(validationError);
-      setFile(null);
-      return;
-    }
-    setError(null);
-    setFile(f);
+  // Revocar solo cuando el componente se desmonte o cambie el archivo
+  return () => {
+    URL.revokeObjectURL(url);
   };
+}, [file]);
+
+const selectFile = (f: File) => {
+  const validationError = validateFile(f);
+  if (validationError) {
+    setError(validationError);
+    setFile(null);
+    setPreviewUrl(null); // limpiar preview si hay error
+    return;
+  }
+  setError(null);
+  setFile(f);
+};
 
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -84,8 +87,8 @@ export default function UploadPin() {
     fetchCategories();
   }, []);
   const handleUpload = async () => {
-    if (!file) {
-      setError("Choose a file.");
+    if (!file || !description.trim() || !categoryId) {
+      setError("All fields are required.");
       return;
     }
     setError(null);
@@ -109,9 +112,18 @@ export default function UploadPin() {
       
 
 
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong.");
+    } catch (err: unknown) {
+    // Type guard para AxiosError
+    if (err && typeof err === "object" && "response" in err) {
+      const axiosError = err as { response?: { status?: number } };
+      if (axiosError.response?.status === 403) {
+        toast.error("You have reached your daily limit. Please subscribe.");
+        return;
+      }
+  } else {
+    setError("Something went wrong.");
+    
+  }
     } finally {
       setUploading(false);
     }
@@ -186,8 +198,10 @@ export default function UploadPin() {
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            
             className="w-full mt-1 p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 outline-none focus:border-white/40"
             placeholder="share your thoughts..."
+            
           />
         </label>
         <input
