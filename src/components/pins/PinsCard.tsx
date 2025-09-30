@@ -1,44 +1,68 @@
 import { IPins } from "@/interfaces/IPins";
-import { FcLike } from "react-icons/fc";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
 import { addLike } from "@/services/pins.services";
+import { AxiosError } from "axios";
+import { toast } from "react-toastify";
+import { FiHeart } from "react-icons/fi";
+import { GoHeartFill } from "react-icons/go";
 
 interface PinsCardProps {
-  pin: IPins | null | undefined;
+  pin: IPins;
+  likesState: {
+    likeView: boolean;
+    likesCount: number;
+  };
+  setLikesState: (newState: { likeView: boolean; likesCount: number }) => void;
+  onOpenModal: () => void;
 }
 
-const isNonEmpty = (v?: string | null): v is string =>
-  typeof v === "string" && v.trim().length > 0;
-
-const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
+const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onOpenModal }) => {
   if (!pin) return null;
 
   const likes = typeof pin.likesCount === "number" ? pin.likesCount : 0;
   const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
 
+  const handleLike = async (e: React.MouseEvent) => {
+  e.stopPropagation(); // evita que se abra el modal al hacer click
+
+  try {
+    await addLike(pin.id);
+
+    const newState = {
+      likeView: !likesState.likeView,
+      likesCount: likesState.likeView
+        ? likesState.likesCount - 1
+        : likesState.likesCount + 1,
+    };
+    setLikesState(newState);
+
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response?.status === 403) {
+      toast.error("You have reached your daily like limit.");
+    } else {
+      toast.error("Something went wrong. Please try again.");
+    }
+  }
+};
+
   return (
-    <div
-      className="w-full sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] 
-                 h-auto mt-6 flex flex-col"
-    >
+    <div className="w-full sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] h-auto mt-6 flex flex-col" onClick={onOpenModal}>
       <SafeImage
         width={500}
         height={500}
         src={pin.image}
-        alt={isNonEmpty(pin.description) ? pin.description : null}
-        className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] 
-                   object-cover opacity-80 rounded-t-xl 
-                   hover:opacity-100 hover:shadow-xl hover:shadow-gray-500"
+        alt={pin.description ?? ""}
+        className="w-full h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] object-cover opacity-80 rounded-t-xl hover:opacity-100 hover:shadow-xl hover:shadow-gray-500"
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 300px"
       />
 
       <div className="flex flex-col text-xs md:text-sm bg-[var(--color-rosa)] p-2 rounded-b-xl mb-6">
         <div className="flex items-center mb-2">
           <div className="flex items-center mr-4">
-            <button className="hover:bg-green-500"
-            onClick={() => addLike(pin.id)}>
-              <FcLike size={18} className="md:size-[20px]"/>
+            <button onClick={handleLike}>
+              {likesState.likeView ? <GoHeartFill size={20} color="red"/> : <FiHeart size={20}/>}
             </button>
             <span className="ml-1">{likes}</span>
           </div>
@@ -47,9 +71,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin }) => {
             <span className="ml-1">{comments}</span>
           </div>
         </div>
-        <span className="font-semibold">
-          {isNonEmpty(pin.description) ? pin.description : ""}
-        </span>
+        <span className="font-semibold">{pin.description ?? ""}</span>
       </div>
     </div>
   );

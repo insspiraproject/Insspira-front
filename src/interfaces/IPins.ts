@@ -6,6 +6,7 @@ export interface IPins {
   user: string;
   likes?: number;
   likesCount: number,
+  likesView: boolean,
   commentsCount: number,
   comment?: number;
 }

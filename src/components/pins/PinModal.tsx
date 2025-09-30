@@ -6,13 +6,20 @@ import Image from "next/image";
 import { IoClose } from "react-icons/io5";
 import { FcLike } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 interface PinModalProps {
   id: string;
   onClose: () => void;
+  likesState: {
+    likeView: boolean;
+    likesCount: number;
+  };
+  setLikesState: (newState: { likeView: boolean; likesCount: number }) => void;
 }
 
-interface PinModal {
+interface PinModalType {
   id: string;
   name: string;
   image: string;
@@ -20,10 +27,11 @@ interface PinModal {
   likes: number;
   comment: number;
   views: number;
+  created: string;
 }
 
 const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
-  const [pin, setPin] = useState<PinModal | null>(null);
+  const [pin, setPin] = useState<PinModalType | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,6 +43,27 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
     };
     fetchPin();
   }, [id]);
+
+  const handleLike = async () => {
+    if (!pin) return;
+
+    try {
+      await addLike(pin.id);
+
+      setPin({
+        ...pin,
+        likes: pin.likes + 1,
+      });
+
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        toast.error("You have reached your daily like limit.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -107,7 +136,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
           <div className="flex items-center mt-4 space-x-4">
             <button
               className="flex items-center hover:text-pink-500"
-              onClick={() => addLike(id)}
+              onClick={handleLike}
             >
               <FcLike size={24} />
               <span className="ml-1">{pin.likes}</span>
