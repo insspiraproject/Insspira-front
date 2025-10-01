@@ -38,23 +38,6 @@ export interface AuthContextValue extends AuthState {
 const USER_KEY = "auth:user";
 const TOKEN_KEY = "auth:token";
 
-// type JwtPayload = {
-//   sub?: string;
-//   email?: string;
-//   name?: string;
-//   isAdmin?: boolean;
-// };
-
-// function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
-//   try {
-//     const [, payload] = token.split(".");
-//     if (!payload) return null;
-//     const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-//     return JSON.parse(json) as T;
-//   } catch {
-//     return null;
-//   }
-// }
 
 function readStorage(): AuthState {
   if (typeof window === "undefined") return { user: null, token: null };
