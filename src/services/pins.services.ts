@@ -216,9 +216,10 @@ export const addComment = async (pinId: string, text: string) => {
     try {
       const res = api.post(`/pins/comments/${pinId}`,
         {text},
-
+        { headers: {Authorization: `Bearer ${token}`}}
       )
+      return res;
     } catch (error) {
-      
+      console.error("Error making a comment")
     }
 }
