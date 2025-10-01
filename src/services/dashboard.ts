@@ -1,7 +1,7 @@
 // src/services/dashboard.ts
 import axios, { type AxiosRequestHeaders } from 'axios';
+import type { UISubscription, UIPayment, Post as UIPostUI } from '@/types/ui';
 
-/* ================= axios local (sin depender de pins.services) ================= */
 const API_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
@@ -26,7 +26,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ================= Tipos ================= */
+/* ================= Tipos backend ================= */
 export type BackendHashtag = { id: string; tag: string };
 
 export type BackendPin = {
@@ -54,8 +54,8 @@ export type BackendUser = {
   name?: string | null;
   username?: string | null;
   email: string;
-  profilePicture?: string | null; // <-- backend
-  biography?: string | null;       // <-- backend
+  profilePicture?: string | null;
+  biography?: string | null;
   createdAt?: string | Date | null;
   pinsCount?: number | null;
 };
@@ -75,7 +75,7 @@ function toUIPost(p: BackendPin): UIPost {
   };
 }
 
-/* ================= Endpoints dashboard ================= */
+/* ================= Pins ================= */
 export async function fetchUserPins(userId: string, page = 1, limit = 20): Promise<UIPost[]> {
   const { data } = await api.get<BackendPin[]>(`/users/${userId}/pins`, { params: { page, limit } });
   return (data ?? []).map(toUIPost);
@@ -86,54 +86,88 @@ export async function fetchUserLikedPins(userId: string, page = 1, limit = 20): 
   return (data ?? []).map(toUIPost);
 }
 
-export async function fetchUserPinsCount(userId: string): Promise<number> {
-  const { data } = await api.get<number>(`/users/${userId}/pins-count`);
-  return typeof data === 'number' ? data : 0;
+/* ================= Avatar helpers (Cloudinary) ================= */
+export async function getAvatarSignature(userId: string) {
+  const { data } = await api.get('/files/signature', { params: { folder: `avatars/${userId}` } });
+  return data as { signature: string; timestamp: number; folder: string; apiKey: string; cloudName: string };
 }
 
-export type UpdateUserPayload = {
-  name?: string;
-  username?: string;
-  email?: string;
-  biography?: string; // backend usa biography
-};
+export async function uploadAvatarToCloudinary(
+  file: File,
+  sig: { signature: string; timestamp: number; folder: string; apiKey: string; cloudName: string }
+) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('api_key', sig.apiKey);
+  formData.append('timestamp', String(sig.timestamp));
+  formData.append('signature', sig.signature);
+  formData.append('folder', sig.folder);
 
-export async function updateUserBasics(id: string, payload: UpdateUserPayload) {
-  const { data } = await api.put(`/users/${id}`, payload);
+  const url = `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`;
+  const res = await fetch(url, { method: 'POST', body: formData });
+  const json = await res.json();
+  return { secure_url: json.secure_url as string, public_id: json.public_id as string };
+}
+
+export async function updateUserProfile(
+  id: string,
+  patch: { name?: string; username?: string; email?: string; biography?: string }
+) {
+  const { data } = await api.patch(`/users/${id}`, patch);
   return data as BackendUser;
 }
 
 export async function setProfilePicture(id: string, publicId: string) {
   const { data } = await api.patch(`/users/${id}/profile-picture`, { publicId });
-  return data as BackendUser; // devuelve el usuario actualizado
+  return data as BackendUser;
 }
 
-/* ================= Cloudinary helpers (para avatar) ================= */
-const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_API_KEY = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+/* ================= Subscripciones / Pagos ================= */
 
-export async function getCloudinarySignature() {
-  const { data } = await api.get('/files/signature');
-  return data as { signature: string; timestamp: number; folder: string };
-}
+/** Respuesta esperada de tu endpoint GET /subscriptions/status/:userId */
+type SubStatusResponse = {
+  success: boolean;
+  hasActivePayment: boolean;
+  plan: any;           // Puede ser string o un objeto Plan { type, features, ... }
+  status?: string;
+  endsAt?: string;
+  benefits?: { name?: string; features?: string[] };
+};
 
-export async function uploadAvatarToCloudinary(
-  file: File,
-  sig: { signature: string; timestamp: number; folder: string }
-) {
-  if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY) {
-    throw new Error(
-      'Faltan envs de Cloudinary (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME / NEXT_PUBLIC_CLOUDINARY_API_KEY)'
-    );
+type PaymentHistoryItem = {
+  id: number | string;
+  paymentId: string;
+  date: string;
+  plan: string;
+  description: string;
+  status: "paid" | "cancelled" | "expired" | "pending";
+  usdPrice: number;
+  arsPrice: number;
+  startsAt: string;
+  endsAt: string;
+  isActive: boolean;
+};
+
+type PaymentHistoryResponse = {
+  success: boolean;
+  history: PaymentHistoryItem[];
+  stats: { totalPayments: number; totalSpentUSD: number; totalSpentARS: number; activeSubscriptions: number };
+};
+
+export async function fetchSubscriptionStatus(userId: string): Promise<SubStatusResponse | null> {
+  try {
+    const { data } = await api.get<SubStatusResponse>(`/subscriptions/status/${userId}`);
+    return data ?? null;
+  } catch {
+    return null;
   }
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('api_key', CLOUDINARY_API_KEY);
-  formData.append('timestamp', String(sig.timestamp));
-  formData.append('signature', sig.signature);
-  formData.append('folder', sig.folder);
+}
 
-  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
-  const res = await axios.post(url, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-  return res.data as { secure_url: string; public_id: string };
+export async function fetchPaymentHistory(userId: string): Promise<PaymentHistoryItem[]> {
+  try {
+    const { data } = await api.get<PaymentHistoryResponse>(`/subscriptions/history/${userId}`);
+    return data?.history ?? [];
+  } catch {
+    return [];
+  }
 }

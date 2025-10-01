@@ -1,13 +1,19 @@
 // src/components/admin/SubscriptionsTable.tsx
 "use client";
 
-import { adminSubscriptions, managedUsers } from "@/mocks/adminMocks";
+import { useEffect, useState } from "react";
+import { fetchAdminSubscriptions, type AdminSubscription } from "@/services/dashboardAdmin";
 
 export default function SubscriptionsTable() {
-  const rows = adminSubscriptions.map((s) => {
-    const user = managedUsers.find((u) => u.id === s.userId);
-    return { ...s, userName: user?.name ?? s.userId, email: user?.email ?? "" };
-  });
+  const [rows, setRows] = useState<AdminSubscription[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAdminSubscriptions().then((data) => {
+      setRows(data);
+      setLoading(false);
+    });
+  }, []);
 
   return (
     <section className="rounded-2xl bg-white/5 border border-white/10 p-4 text-white">
@@ -25,7 +31,10 @@ export default function SubscriptionsTable() {
             </tr>
           </thead>
           <tbody className="[&>tr>td]:py-2">
-            {rows.map((s) => (
+            {loading && (
+              <tr><td colSpan={6} className="py-6 text-center opacity-70">Loading…</td></tr>
+            )}
+            {!loading && rows.map((s) => (
               <tr key={s.id} className="border-b border-white/5">
                 <td>
                   <div className="font-medium">{s.userName}</div>
@@ -35,9 +44,7 @@ export default function SubscriptionsTable() {
                 <td>{s.status}</td>
                 <td>{new Date(s.startedAt).toLocaleDateString()}</td>
                 <td>{s.renewsAt ? new Date(s.renewsAt).toLocaleDateString() : "-"}</td>
-                <td>
-                  {s.pricePerMonth} {s.currency}/month
-                </td>
+                <td>{s.pricePerMonth} {s.currency}/month</td>
               </tr>
             ))}
           </tbody>

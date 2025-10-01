@@ -18,6 +18,7 @@ export default function RequireAuth({
   const { isHydrated, isChecking, isAuthenticated, isAdmin } = useAuth();
 
   useEffect(() => {
+     console.log("[RequireAuth] hydrate/check/auth/admin:", { isHydrated, isChecking, isAuthenticated, isAdmin, role });
     if (!isHydrated || isChecking) return;
     if (!isAuthenticated) {
       router.replace("/login");

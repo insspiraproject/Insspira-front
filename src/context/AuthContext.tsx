@@ -14,7 +14,6 @@ import {
   AuthUser,
   LoginUser,
   RegisterUser,
-  // 👇 añadidos:
   saveTokenFromQueryAndHydrateAuth,
   getMe,
 } from "@/services/authservice";
@@ -79,6 +78,35 @@ function writeStorage(next: AuthState) {
   }
 }
 
+/** 👉 Cookies para que el middleware pueda redirigir estrictamente */
+function writeCookies(user: AuthUser | null, token: string | null) {
+  if (typeof document === "undefined") return;
+  const maxAge = 60 * 60 * 24 * 30; // 30 días
+  const attrs = `Path=/; Max-Age=${maxAge}; SameSite=Lax${typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : ""}`;
+
+  // auth_token (solo señal de sesión para el middleware)
+  if (token) {
+    document.cookie = `auth_token=${encodeURIComponent(token)}; ${attrs}`;
+  } else {
+    document.cookie = `auth_token=; Path=/; Max-Age=0; SameSite=Lax`;
+  }
+
+  // role (admin | user) — fuente: user.role o, si hay token, del payload
+  let role: "admin" | "user" | "" = "";
+  if (user?.role) {
+    role = user.role;
+  } else if (token) {
+    const payload = decodeJwt<JwtPayload>(token) ?? {};
+    role = payload?.isAdmin ? "admin" : "user";
+  }
+
+  if (role) {
+    document.cookie = `role=${role}; ${attrs}`;
+  } else {
+    document.cookie = `role=; Path=/; Max-Age=0; SameSite=Lax`;
+  }
+}
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -87,12 +115,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
-    setState(readStorage());
+    const next = readStorage();
+    setState(next);
+    // sincroniza cookies al cargar (por si se recargó la pestaña)
+    writeCookies(next.user, next.token);
     setIsHydrated(true);
 
     const onStorage = (e: StorageEvent) => {
       if (e.key === USER_KEY || e.key === TOKEN_KEY) {
-        setState(readStorage());
+        const synced = readStorage();
+        setState(synced);
+        writeCookies(synced.user, synced.token); // sincroniza cookies entre pestañas
       }
     };
     window.addEventListener("storage", onStorage);
@@ -102,9 +135,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setAuth = useCallback((user: AuthUser | null, token: string | null) => {
     setState({ user, token });
     writeStorage({ user, token });
+    writeCookies(user, token); // 👉 clave para el middleware
   }, []);
 
-  // ✅ Chequeo al hidratar: 1) captura ?token=... de Auth0  2) si no hay token pero hay cookie de sesión, usa /auth/me
+  // ✅ Bootstrap de sesión:
+  // 1) Captura ?token=... (Auth0 callback) y setea contexto (y cookies)
+  // 2) Si no hay token ni user, intenta /auth/me (sesión por cookie backend) y setea user
   useEffect(() => {
     if (!isHydrated) return;
 
@@ -112,16 +148,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       setIsChecking(true);
       try {
-        // 1) Guardar token de callback (?token=...) y setear contexto
         await saveTokenFromQueryAndHydrateAuth(setAuth);
 
-        // 2) Si seguimos sin user ni token, intentar sesión por cookie (/auth/me)
         const hasUser = Boolean(readStorage().user);
         const hasToken = Boolean(readStorage().token);
         if (!hasUser && !hasToken) {
           const me = await getMe();
           if (!cancelled && me) {
-            // no tenemos token (cookie session), pero setear user basta para isAuthenticated
+            // no hay token guardado, pero hay sesión en backend -> setea user
             setAuth(me, null);
           }
         }
@@ -138,6 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated, setAuth]);
 
+  // Asegura que el rol del usuario respete lo que diga el token (si lo hay)
   const extractTokenAndUser = (res: unknown): { token: string | null; user: AuthUser | null } => {
     const anyRes = res as Record<string, unknown>;
     const token =
@@ -147,14 +182,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     let user = (anyRes?.user as AuthUser | undefined) ?? null;
 
-    if (!user && token) {
-      const payload = decodeJwt<JwtPayload>(token) ?? {};
-      user = {
-        id: payload.sub ?? "",
-        email: payload.email ?? "",
-        name: payload.name ?? (payload.email?.split?.("@")[0] ?? "User"),
-        role: payload.isAdmin ? "admin" : "user",
-      };
+    const payload = token ? decodeJwt<JwtPayload>(token) ?? {} : {};
+    if (user && typeof payload.isAdmin === "boolean") {
+      const expected = payload.isAdmin ? "admin" : "user";
+      if (user.role !== expected) {
+        user.role = expected; // el token manda
+      }
     }
 
     return { token, user };
@@ -183,7 +216,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(() => {
-    setAuth(null, null);
+    setAuth(null, null); // borra storage + cookies (auth_token y role)
   }, [setAuth]);
 
   const authFetch = useCallback(
