@@ -1,4 +1,3 @@
-// src/components/admin/PlansTable.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -50,17 +49,18 @@ export default function PlansTable() {
   };
 
   const addPlan = async () => {
-    const created = await upsertAdminPlan({
+    const created = (await upsertAdminPlan({
       name: "Plus",
       pricePerMonth: 9.99,
       currency: "USD",
       features: ["New feature"],
       isActive: true,
-    });
-    setRows((prev) => [created as AdminPlan, ...prev]);
-    // Abre modal con el creado (pull fresh por si el backend normaliza)
-    const fresh = (await fetchAdminPlans()).find((p) => p.id === (created as any).id);
-    setEditing(fresh ?? (created as AdminPlan));
+    })) as AdminPlan;
+
+    setRows((prev) => [created, ...prev]);
+
+    const fresh = (await fetchAdminPlans()).find((p) => p.id === created.id);
+    setEditing(fresh ?? created);
   };
 
   const removePlan = async (id: string) => {

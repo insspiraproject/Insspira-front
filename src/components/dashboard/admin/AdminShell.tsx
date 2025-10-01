@@ -9,7 +9,6 @@ import ReportsTable from "./ReportsTable";
 import SubscriptionsTable from "./SubscriptionsTable";
 import PaymentsTable from "./PaymentsTable";
 import AdminProfileCard from "./AdminProfileCard";
-import AdminCharts from "./AdminCharts";
 import PlansTable from "./PlansTable";
 
 export default function AdminShell() {

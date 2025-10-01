@@ -1,9 +1,10 @@
-// src/components/admin/PlanEditModal.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { FiX } from "react-icons/fi";
 import type { AdminPlan } from "@/services/dashboardAdmin";
+
+type Currency = 'USD' | 'COP' | 'ARS';
 
 export default function PlanEditModal({
   open,
@@ -14,7 +15,7 @@ export default function PlanEditModal({
   open: boolean;
   plan?: AdminPlan;
   onClose: () => void;
-  onSave: (p: { name: string; pricePerMonth: number; currency: 'USD'|'COP'|'ARS'; features: string[]; isActive: boolean; type?: string }) => void;
+  onSave: (p: { name: string; pricePerMonth: number; currency: Currency; features: string[]; isActive: boolean; type?: string }) => void;
 }) {
   const [local, setLocal] = useState<AdminPlan | null>(plan ?? null);
 
@@ -22,6 +23,11 @@ export default function PlanEditModal({
   if (!open || !local) return null;
 
   const featuresStr = local.features.join(", ");
+
+  const handleCurrency = (e: ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value as Currency;
+    setLocal({ ...local, currency: next });
+  };
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
@@ -63,7 +69,7 @@ export default function PlanEditModal({
             <select
               className="mt-1 w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 outline-none"
               value={local.currency}
-              onChange={(e) => setLocal({ ...local, currency: e.target.value as any })}
+              onChange={handleCurrency}
             >
               <option value="USD">USD</option>
               <option value="COP">COP</option>
@@ -107,7 +113,7 @@ export default function PlanEditModal({
               onSave({
                 name: local.name,
                 pricePerMonth: local.pricePerMonth,
-                currency: local.currency,
+                currency: local.currency as Currency,
                 features: local.features,
                 isActive: local.isActive,
               })

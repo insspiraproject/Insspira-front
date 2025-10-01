@@ -2,7 +2,7 @@
 "use client";
 
 import { JSX } from "react";
-import { FiHome, FiUsers, FiFlag, FiCreditCard, FiBookmark, FiUser, FiLayers } from "react-icons/fi";
+import { FiUsers, FiFlag, FiCreditCard, FiBookmark, FiUser, FiLayers } from "react-icons/fi";
 
 type Key = "users" | "reports" | "subscriptions" | "payments" | "plans" | "profile";
 
