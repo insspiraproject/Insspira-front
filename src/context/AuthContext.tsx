@@ -14,8 +14,6 @@ import {
   AuthUser,
   LoginUser,
   RegisterUser,
-  // 👇 añadidos:
-  // saveTokenFromQueryAndHydrateAuth,
   getMe,
 } from "@/services/authservice";
  import { API_BASE } from "@/services/authservice";
@@ -40,23 +38,23 @@ export interface AuthContextValue extends AuthState {
 const USER_KEY = "auth:user";
 const TOKEN_KEY = "auth:token";
 
-type JwtPayload = {
-  sub?: string;
-  email?: string;
-  name?: string;
-  isAdmin?: boolean;
-};
+// type JwtPayload = {
+//   sub?: string;
+//   email?: string;
+//   name?: string;
+//   isAdmin?: boolean;
+// };
 
-function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
-  try {
-    const [, payload] = token.split(".");
-    if (!payload) return null;
-    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-    return JSON.parse(json) as T;
-  } catch {
-    return null;
-  }
-}
+// function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
+//   try {
+//     const [, payload] = token.split(".");
+//     if (!payload) return null;
+//     const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+//     return JSON.parse(json) as T;
+//   } catch {
+//     return null;
+//   }
+// }
 
 function readStorage(): AuthState {
   if (typeof window === "undefined") return { user: null, token: null };
@@ -83,7 +81,7 @@ function writeStorage(next: AuthState) {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({ user: null, token: null });
+  const [state, setState] = useState<AuthState>(() => readStorage());
   const [isHydrated, setIsHydrated] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
 
