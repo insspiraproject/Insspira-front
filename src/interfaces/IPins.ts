@@ -10,3 +10,9 @@ export interface IPins {
   commentsCount: number,
   comment?: number;
 }
+
+export interface IComment {
+  id: string;
+  text: string;
+  createAt: string;
+}

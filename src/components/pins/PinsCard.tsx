@@ -60,6 +60,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
 
       <div className="flex flex-col text-xs md:text-sm bg-[var(--color-rosa)] p-2 rounded-b-xl mb-6">
         <div className="flex items-center mb-2">
+          <p>{pin.user}</p>
           <div className="flex items-center mr-4">
             <button onClick={handleLike}>
               {likesState.likeView ? <GoHeartFill size={20} color="red"/> : <FiHeart size={20}/>}

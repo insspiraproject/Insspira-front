@@ -1,6 +1,6 @@
 // src/services/pins.services.ts (o src/services/pins.ts)
 import axios, { type AxiosRequestHeaders } from "axios";
-import type { IPins } from "@/interfaces/IPins";
+import type { IPins, IComment } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
 
@@ -206,4 +206,19 @@ export const deleteLike = async (pinId: string) => {
       headers: {Authorization: `Bearer ${token}`}
     }
   )
+}
+
+// --- Create Comment ---
+export const addComment = async (pinId: string, text: string) => {
+  const token = localStorage.getItem("auth:token");
+    if (!pinId || !token) return null
+
+    try {
+      const res = api.post(`/pins/comments/${pinId}`,
+        {text},
+
+      )
+    } catch (error) {
+      
+    }
 }
