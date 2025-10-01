@@ -15,9 +15,10 @@ import {
   LoginUser,
   RegisterUser,
   // 👇 añadidos:
-  saveTokenFromQueryAndHydrateAuth,
+  // saveTokenFromQueryAndHydrateAuth,
   getMe,
 } from "@/services/authservice";
+ import { API_BASE } from "@/services/authservice";
 
 export interface AuthState {
   user: AuthUser | null;
@@ -86,87 +87,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
 
-  useEffect(() => {
-    setState(readStorage());
-    setIsHydrated(true);
-
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === USER_KEY || e.key === TOKEN_KEY) {
-        setState(readStorage());
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
-
   const setAuth = useCallback((user: AuthUser | null, token: string | null) => {
     setState({ user, token });
-    writeStorage({ user, token });
+    writeStorage({ user, token }); // sigue persistiendo si hay token
   }, []);
 
-  // ✅ Chequeo al hidratar: 1) captura ?token=... de Auth0  2) si no hay token pero hay cookie de sesión, usa /auth/me
+  // ✅ bootstrap: intentar sesión con cookie
   useEffect(() => {
-    if (!isHydrated) return;
-
     let cancelled = false;
-    (async () => {
-      setIsChecking(true);
-      try {
-        // 1) Guardar token de callback (?token=...) y setear contexto
-        await saveTokenFromQueryAndHydrateAuth(setAuth);
+    setIsChecking(true);
 
-        // 2) Si seguimos sin user ni token, intentar sesión por cookie (/auth/me)
-        const hasUser = Boolean(readStorage().user);
-        const hasToken = Boolean(readStorage().token);
-        if (!hasUser && !hasToken) {
-          const me = await getMe();
-          if (!cancelled && me) {
-            // no tenemos token (cookie session), pero setear user basta para isAuthenticated
-            setAuth(me, null);
-          }
+    (async () => {
+      try {
+        const me = await getMe(); // usa cookie de passport
+        if (!cancelled && me) {
+          setAuth(me, null);
         }
       } catch (err) {
         console.error("Auth bootstrap error:", err);
       } finally {
-        if (!cancelled) setIsChecking(false);
+        if (!cancelled) {
+          setIsChecking(false);
+          setIsHydrated(true);
+        }
       }
     })();
 
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, setAuth]);
-
-  const extractTokenAndUser = (res: unknown): { token: string | null; user: AuthUser | null } => {
-    const anyRes = res as Record<string, unknown>;
-    const token =
-      (anyRes?.token as string | undefined) ??
-      (anyRes?.accessToken as string | undefined) ??
-      null;
-
-    let user = (anyRes?.user as AuthUser | undefined) ?? null;
-
-    if (!user && token) {
-      const payload = decodeJwt<JwtPayload>(token) ?? {};
-      user = {
-        id: payload.sub ?? "",
-        email: payload.email ?? "",
-        name: payload.name ?? (payload.email?.split?.("@")[0] ?? "User"),
-        role: payload.isAdmin ? "admin" : "user",
-      };
-    }
-
-    return { token, user };
-  };
+  }, [setAuth]);
 
   const login = useCallback(
     async (values: LoginFormValues) => {
       const res = await LoginUser(values);
       if (!res) return false;
-      const { token, user } = extractTokenAndUser(res);
-      setAuth(user, token);
-      return Boolean(user || token);
+      setAuth(res.user ?? null, res.token ?? null);
+      return Boolean(res.user || res.token);
     },
     [setAuth]
   );
@@ -175,27 +132,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (values: RegisterFormValues) => {
       const res = await RegisterUser(values);
       if (!res) return false;
-      const { token, user } = extractTokenAndUser(res);
-      setAuth(user, token);
-      return Boolean(user || token);
+      setAuth(res.user ?? null, res.token ?? null);
+      return Boolean(res.user || res.token);
     },
     [setAuth]
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setAuth(null, null);
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.warn("Logout cookie error:", err);
+    }
   }, [setAuth]);
 
   const authFetch = useCallback(
     async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const headers = new Headers(init?.headers ?? {});
-      const token = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-      if (token && !headers.has("Authorization")) {
-        headers.set("Authorization", `Bearer ${token}`);
+      if (state.token && !headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${state.token}`);
       }
-      return fetch(input, { ...init, headers });
+      return fetch(input, {
+        ...init,
+        headers,
+        credentials: "include", // 🔑 incluye cookie siempre
+      });
     },
-    []
+    [state.token]
   );
 
   const value: AuthContextValue = useMemo(
