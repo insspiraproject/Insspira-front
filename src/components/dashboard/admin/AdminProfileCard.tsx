@@ -1,7 +1,5 @@
 // src/components/admin/AdminProfileCard.tsx
 "use client";
-
-import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AdminProfileCard() {

@@ -1,4 +1,3 @@
-// src/view/dashboard/DashboardView.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -22,9 +21,11 @@ import {
   type BackendUser,
   fetchSubscriptionStatus,
   fetchPaymentHistory,
+  type SubStatusResponse,
 } from '@/services/dashboard';
 
 type APIUser = BackendUser;
+type PlanLike = string | { type?: string; features?: string[] | string } | null | undefined;
 
 const API = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
@@ -50,19 +51,21 @@ function uiPostToUI(p: UIPost): Post {
   };
 }
 
+function isPlanObject(p: PlanLike): p is { type?: string; features?: string[] | string } {
+  return !!p && typeof p === 'object';
+}
+
 function mapStatusToUISubscription(
-  status: Awaited<ReturnType<typeof fetchSubscriptionStatus>> | null,
+  status: SubStatusResponse | null,
   history: Awaited<ReturnType<typeof fetchPaymentHistory>>
 ): UISubscription {
   const latest = history?.[0];
 
-  // Detectar plan crudo
   const rawType =
     (typeof status?.plan === 'string' && status?.plan) ||
-    (status?.plan && (status.plan as any).type) ||
+    (isPlanObject(status?.plan) ? status?.plan?.type : undefined) ||
     (latest?.description ?? '').toLowerCase();
 
-  // Normalizar a UI
   let plan: UISubscription['plan'] = 'Free';
   if (rawType?.includes('annual')) plan = 'Business';
   else if (rawType?.includes('monthly')) plan = 'Pro';
@@ -72,14 +75,16 @@ function mapStatusToUISubscription(
     status?.hasActivePayment ? 'active' : plan === 'Free' ? 'active' : 'past_due';
 
   const featuresFromPlan =
-    Array.isArray((status?.plan as any)?.features)
-      ? (status?.plan as any).features
-      : typeof (status?.plan as any)?.features === 'string'
-        ? String((status?.plan as any).features)
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : status?.benefits?.features ?? [];
+    isPlanObject(status?.plan)
+      ? Array.isArray(status.plan.features)
+        ? status.plan.features
+        : typeof status.plan.features === 'string'
+          ? status.plan.features
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : []
+      : status?.benefits?.features ?? [];
 
   const pricePerMonth: number =
     typeof latest?.usdPrice === 'number'
@@ -105,9 +110,8 @@ function mapStatusToUISubscription(
 
 function mapHistoryToUIPayments(history: Awaited<ReturnType<typeof fetchPaymentHistory>>): UIPayment[] {
   return (history ?? []).map((p) => {
-    const method: UIPayment['method'] = 'CARD'; // normalizamos (tu UI acepta uno de estos)
-    const status = p.status as UIPayment['status']; // mapeo directo
-
+    const method: UIPayment['method'] = 'CARD';
+    const status = p.status as UIPayment['status'];
     return {
       id: String(p.id),
       date: p.date,
@@ -133,27 +137,32 @@ export default function DashboardView() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [liked, setLiked] = useState<Post[]>([]);
 
+  const id = authUser?.id;
+  const name = authUser?.name;
+  const email = authUser?.email;
+
   useEffect(() => {
-     console.log("[DashboardView] auth:", { isHydrated, isAuthenticated, authUser });
-    if (!isHydrated || !isAuthenticated || !authUser?.id) return;
+    // Evitamos depender de todo el objeto authUser:
+    console.log("[DashboardView] auth:", { isHydrated, isAuthenticated, id, name });
+
+    if (!isHydrated || !isAuthenticated || !id) return;
 
     (async () => {
       try {
         // 1) datos del usuario
         let backendUser: APIUser | null = null;
-        const res = await authFetch(`${API}/users/${authUser.id}`);
+        const res = await authFetch(`${API}/users/${id}`);
         if (res.ok) backendUser = (await res.json()) as APIUser;
 
         const baseUser: UserProfile = {
-          id: backendUser?.id ?? authUser.id,
-          name: backendUser?.name ?? authUser.name ?? authUser.email,
+          id: backendUser?.id ?? id,
+          name: backendUser?.name ?? name ?? email ?? '',
           username: backendUser?.username ?? null,
-          email: backendUser?.email ?? authUser.email,
-          avatar: backendUser?.profilePicture ?? "",  // si está vacío, lo muestras como placeholder en el <Image>
+          email: backendUser?.email ?? email ?? '',
+          avatar: backendUser?.profilePicture ?? "",
           bio: backendUser?.biography ?? "",
           joinDate: toIsoStringSafe(backendUser?.createdAt) ?? "",
           postsCount: typeof backendUser?.pinsCount === 'number' ? backendUser.pinsCount : 0,
-          // se completan luego:
           subscription: {
             plan: "Free",
             status: "active",
@@ -165,7 +174,7 @@ export default function DashboardView() {
           payments: [],
         };
 
-        // 2) posts propios + likes (reales)
+        // 2) posts propios + likes
         const [p, l] = await Promise.all([
           fetchUserPins(baseUser.id),
           fetchUserLikedPins(baseUser.id),
@@ -193,12 +202,11 @@ export default function DashboardView() {
         setLiked(lUi);
 
       } catch {
-        // Fallback mínimo si falla /users/:id
         setUser({
-          id: authUser.id,
-          name: authUser.name ?? authUser.email,
+          id: id,
+          name: name ?? email ?? '',
           username: null,
-          email: authUser.email,
+          email: email ?? '',
           avatar: "",
           bio: "",
           joinDate: new Date().toISOString(),
@@ -219,7 +227,7 @@ export default function DashboardView() {
         if (!dismissed) setShowNotice(true);
       }
     })();
-  }, [isHydrated, isAuthenticated, authUser?.id, authUser?.name, authUser?.email, authFetch]);
+  }, [isHydrated, isAuthenticated, id, name, email, authFetch]);
 
   if (!isHydrated) return null;
   if (!user) return <div className="text-white p-6">Loading…</div>;

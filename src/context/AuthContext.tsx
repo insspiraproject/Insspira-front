@@ -169,7 +169,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isHydrated, setAuth]);
 
   // Asegura que el rol del usuario respete lo que diga el token (si lo hay)
@@ -180,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       (anyRes?.accessToken as string | undefined) ??
       null;
 
-    let user = (anyRes?.user as AuthUser | undefined) ?? null;
+    const user = (anyRes?.user as AuthUser | undefined) ?? null;
 
     const payload = token ? decodeJwt<JwtPayload>(token) ?? {} : {};
     if (user && typeof payload.isAdmin === "boolean") {

@@ -14,15 +14,13 @@ export default function ProfileEditForm({
   onChange: (next: UserProfile) => void;
   onSaved?: () => void;
 }) {
-  const [form, setForm] = useState({
+  const [form] = useState({
     name: value.name,
     username: value.username ?? "",
     email: value.email,
     bio: value.bio ?? "",
   });
   const [saving, setSaving] = useState(false);
-
-  const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
   const save = async () => {
     try {

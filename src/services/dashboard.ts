@@ -1,6 +1,4 @@
-// src/services/dashboard.ts
 import axios, { type AxiosRequestHeaders } from 'axios';
-import type { UISubscription, UIPayment, Post as UIPostUI } from '@/types/ui';
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -124,11 +122,12 @@ export async function setProfilePicture(id: string, publicId: string) {
 
 /* ================= Subscripciones / Pagos ================= */
 
-/** Respuesta esperada de tu endpoint GET /subscriptions/status/:userId */
-type SubStatusResponse = {
+type PlanLike = string | { type?: string; features?: string[] | string } | null;
+
+export type SubStatusResponse = {
   success: boolean;
   hasActivePayment: boolean;
-  plan: any;           // Puede ser string o un objeto Plan { type, features, ... }
+  plan: PlanLike;       // ⬅️ antes era any
   status?: string;
   endsAt?: string;
   benefits?: { name?: string; features?: string[] };

@@ -87,11 +87,6 @@ export type AdminOverview = {
 
 /* ================= Helpers ================= */
 const toCsv = (arr: string[]) => (arr || []).map(s => s.trim()).filter(Boolean).join(',');
-const parseFeatures = (csv?: string | null) =>
-  (csv || '')
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean);
 
 /* ================= Calls ================= */
 // Overview
