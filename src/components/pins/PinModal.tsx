@@ -219,24 +219,16 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
 
             <label className="block mb-2 text-sm">Motivo</label>
             <select
-              className="w-full border px-2 py-1 rounded mb-3"
+              className="bg-[#1B273B] w-full border px-2 py-1 rounded mb-3 font-sans"
               value={reportType}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                 setReportType(e.target.value as ReportType)
               }
             >
-              <option value="SPAM">Spam</option>
+              <option value="SPAM" className="bg-amber-200/0">Spam</option>
               <option value="INAPPROPRIATE">Contenido inapropiado</option>
               <option value="COPYRIGHT">Copyright</option>
             </select>
-
-            <label className="block mb-2 text-sm">Detalle (opcional)</label>
-            <textarea
-              className="w-full border px-2 py-1 rounded mb-3"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              placeholder="Explica brevemente..."
-            />
 
             <div className="flex justify-end space-x-2">
               <button
