@@ -1,3 +1,4 @@
+//src/view/Subscriptions.tsx
 'use client'
 import React from "react";
 import Subscriptions from "@/components/subscriptions/Subscriptions";

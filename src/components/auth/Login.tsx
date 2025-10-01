@@ -1,3 +1,4 @@
+//src/components/auth/Login.tsx
 "use client";
 
 import { useFormik } from "formik";
@@ -10,11 +11,19 @@ import { loginWithAuth0 } from "@/services/authservice";
 
 export default function FormLogin() {
   const router = useRouter();
-  const { login, isHydrated, user } = useAuth();
+  const { login, isHydrated } = useAuth();
 
   // fallback por si el re-render del contexto no llegó aún
   const getRoleFromStorage = (): "admin" | "user" | undefined => {
     try {
+      const token = localStorage.getItem("auth:token");
+      if (token) {
+        const base = token.split(".")[1];
+        if (base) {
+          const json = JSON.parse(atob(base.replace(/-/g, "+").replace(/_/g, "/")));
+          if (json?.isAdmin) return "admin";            // 👈 prioriza lo que dice el token
+        }
+      }
       const raw = localStorage.getItem("auth:user");
       if (!raw) return undefined;
       const parsed = JSON.parse(raw) as { role?: "admin" | "user" };
@@ -31,9 +40,12 @@ export default function FormLogin() {
       try {
         const ok = await login(values);
         if (ok) {
-          const role = user?.role ?? getRoleFromStorage();
-          router.push(role === "admin" ? "/admin" : "/dashboard");
+          const role = getRoleFromStorage();
+          console.log("[Login] localStorage auth:user:", localStorage.getItem("auth:user"));
+          console.log("[Login] going to:", role === "admin" ? "/dashboard/admin" : "/dashboard");
+          router.push(role === "admin" ? "/dashboard/admin" : "/dashboard");
         }
+
       } finally {
         setSubmitting(false);
       }

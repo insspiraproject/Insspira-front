@@ -65,16 +65,31 @@ async function getUserFromToken(accessToken: string): Promise<AuthUser | null> {
     const id = payload?.sub;
     if (!id) return null;
 
-    const res = await fetch(`${API_BASE}/users/${id}`);
-    if (!res.ok) return null;
+    const url = `${API_BASE}/users/${id}`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` }, // 👈 NECESARIO
+      credentials: "include",
+    });
+
+    console.log("[authservice.getUserFromToken] GET", url, "status:", res.status);
+
+    if (!res.ok) {
+      const txt = await res.text();
+      console.log("[authservice.getUserFromToken] body:", txt);
+      return null;
+    }
+
     const u = (await res.json()) as APIUser;
-    return {
+    const authUser: AuthUser = {
       id: u.id,
       name: u.name ?? u.username ?? u.email,
       email: u.email,
       role: u.isAdmin ? "admin" : "user",
     };
-  } catch {
+    console.log("[authservice.getUserFromToken] resolved user:", authUser);
+    return authUser;
+  } catch (e) {
+    console.log("[authservice.getUserFromToken] error:", e);
     return null;
   }
 }
@@ -146,36 +161,37 @@ export const RegisterUser = async (
   }
 };
 
-export const LoginUser = async (
-  userData: LoginFormValues
-): Promise<LoginResponse | null> => {
-  try {
-    const { ok, data, error } = await postJSON<LoginFormValues>(`${API_BASE}/auth/login`, userData);
-    if (!ok) {
-      toast.error(error ?? "Login failed");
-      return null;
-    }
+export function loginWithAuth0(): void {
+  const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+  const RETURN_TO = process.env.NEXT_PUBLIC_RETURN_TO || 'http://localhost:3001/dashboard';
+  // antes llamabas a /login; ahora a /start-login
+  window.location.href = `${API_BASE}/start-login?returnTo=${encodeURIComponent(RETURN_TO)}`;
+}
 
-    const accessToken = pickToken(data);
-    const user: AuthUser | undefined =
-      accessToken ? (await getUserFromToken(accessToken)) ?? undefined : undefined;
+export const LoginUser = async (userData: LoginFormValues) => {
+  const { ok, data, error } = await postJSON<LoginFormValues>(`${API_BASE}/auth/login`, userData);
+  if (!ok) { toast.error(error ?? "Login failed"); return null; }
 
-    toast.success("User logged successfully!");
-    return { token: accessToken, user };
-  } catch (err: unknown) {
-    toast.error((err as Error)?.message || "Something went wrong during login");
-    return null;
+  const accessToken = pickToken(data);
+  let user: AuthUser | undefined;
+
+  if (accessToken) {
+    // rol from token
+    const payload = decodeJwtPayload(accessToken);
+    const isAdmin = !!payload?.isAdmin;
+
+    // trae datos del user para name/email, pero el rol lo fija el token
+    const apiUser = await getUserFromToken(accessToken); // usa Authorization ya
+    user = apiUser ? { ...apiUser, role: isAdmin ? "admin" : "user" } :
+                     (payload?.sub && payload?.email) ? { id: payload.sub, name: payload.name ?? payload.email, email: payload.email, role: isAdmin ? "admin" : "user" } :
+                     undefined;
   }
+
+  toast.success("User logged successfully!");
+  return { token: accessToken, user };
 };
 
 /* ============= Soporte Auth0: login + guardado token de callback ============= */
-
-// Redirige a la ruta de login del proveedor (Auth0) expuesta en tu backend (por ejemplo /login)
-export function loginWithAuth0(): void {
-  const path = process.env.NEXT_PUBLIC_AUTH0_LOGIN_PATH || "/login";
-  window.location.href = `${API_BASE}${path}`;
-}
-
 // Guarda ?token=... (callback de Auth0) y actualiza el AuthContext con setAuth
 export async function saveTokenFromQueryAndHydrateAuth(
   setAuth: (user: AuthUser | null, token: string | null) => void
@@ -185,8 +201,13 @@ export async function saveTokenFromQueryAndHydrateAuth(
   const token = url.searchParams.get("token");
   if (!token) return;
 
+  const payload = decodeJwtPayload(token);
+  console.log("[saveTokenFromQuery] token payload:", payload);
+
   localStorage.setItem("auth:token", token);
-  const user = await getUserFromToken(token);
+  const user = await getUserFromToken(token); // ← ahora trae Authorization
+  console.log("[saveTokenFromQuery] user from API:", user);
+
   if (user) localStorage.setItem("auth:user", JSON.stringify(user));
   setAuth(user ?? null, token);
 

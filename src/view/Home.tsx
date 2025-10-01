@@ -1,3 +1,4 @@
+//src/view/Home.tsx
 'use client'
 
 import PinsList from "@/components/pins/PinsList";

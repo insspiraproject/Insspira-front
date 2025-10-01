@@ -1,3 +1,4 @@
+//src/components/pins/PinsList.tsx
 'use client'
 
 import PinsCard from "@/components/pins/PinsCard";

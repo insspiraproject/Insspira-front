@@ -1,3 +1,4 @@
+//src/components/pins/PinsCard.tsx
 import { IPins } from "@/interfaces/IPins";
 import { FcLike } from "react-icons/fc";
 import { FaCommentDots } from "react-icons/fa";

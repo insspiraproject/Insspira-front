@@ -1,3 +1,4 @@
+//src/components/pins/PinModal.tsx
 'use client'
 
 import { useEffect, useState } from "react";

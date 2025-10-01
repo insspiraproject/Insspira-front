@@ -1,4 +1,5 @@
 
+//src/components/pins/UploadPin.tsx
 "use client";
 
 import { useEffect, useState } from "react";

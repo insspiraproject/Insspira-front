@@ -1,3 +1,4 @@
+//src/view/FormRgister.tsx
 import RegisterComponent from "@/components/auth/Register";
 
 
