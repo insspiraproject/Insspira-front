@@ -10,30 +10,25 @@ import ImageEditModal from '@/components/dashboard/ImageEditModal';
 import ProfileEditModal from '@/components/dashboard/ProfileEditModal';
 import DataFallbackNotice from '@/components/dashboard/DataFallbackNotice';
 import { useAuth } from '@/context/AuthContext';
-
-import {
-  currentUser as mockUser,
-  currentUserLikedPosts as mockLiked,
-  currentUserPosts as mockPosts,
-  type UserProfile,
-  type Post,
-} from '@/mocks/userMocks';
+import type { UserProfile, Post, UISubscription, UIPayment } from '@/types/ui';
 
 import {
   fetchUserPins,
   fetchUserLikedPins,
-  // fetchUserPinsCount, // opcional si confías en posts.length
   type UIPost,
-  getCloudinarySignature,
+  getAvatarSignature,
   uploadAvatarToCloudinary,
   setProfilePicture,
   type BackendUser,
+  fetchSubscriptionStatus,
+  fetchPaymentHistory,
 } from '@/services/dashboard';
 
-type APIUser = BackendUser; // usamos los nombres reales del backend
+type APIUser = BackendUser;
 
 const API = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
+/* ===== Helpers de UI ===== */
 function toIsoStringSafe(v: string | Date | null | undefined): string | undefined {
   if (!v) return undefined;
   try {
@@ -44,7 +39,7 @@ function toIsoStringSafe(v: string | Date | null | undefined): string | undefine
   }
 }
 
-function uiPostToMockPost(p: UIPost): Post {
+function uiPostToUI(p: UIPost): Post {
   return {
     id: p.id,
     title: p.title,
@@ -53,6 +48,76 @@ function uiPostToMockPost(p: UIPost): Post {
     createdAt: p.createdAt,
     tags: p.tags ?? [],
   };
+}
+
+function mapStatusToUISubscription(
+  status: Awaited<ReturnType<typeof fetchSubscriptionStatus>> | null,
+  history: Awaited<ReturnType<typeof fetchPaymentHistory>>
+): UISubscription {
+  const latest = history?.[0];
+
+  // Detectar plan crudo
+  const rawType =
+    (typeof status?.plan === 'string' && status?.plan) ||
+    (status?.plan && (status.plan as any).type) ||
+    (latest?.description ?? '').toLowerCase();
+
+  // Normalizar a UI
+  let plan: UISubscription['plan'] = 'Free';
+  if (rawType?.includes('annual')) plan = 'Business';
+  else if (rawType?.includes('monthly')) plan = 'Pro';
+  else if (rawType?.includes('free')) plan = 'Free';
+
+  const normalizedStatus: UISubscription['status'] =
+    status?.hasActivePayment ? 'active' : plan === 'Free' ? 'active' : 'past_due';
+
+  const featuresFromPlan =
+    Array.isArray((status?.plan as any)?.features)
+      ? (status?.plan as any).features
+      : typeof (status?.plan as any)?.features === 'string'
+        ? String((status?.plan as any).features)
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : status?.benefits?.features ?? [];
+
+  const pricePerMonth: number =
+    typeof latest?.usdPrice === 'number'
+      ? latest.usdPrice
+      : plan === 'Pro'
+        ? 10
+        : plan === 'Business'
+          ? 100
+          : 0;
+
+  const currency: UISubscription['currency'] = 'USD';
+
+  return {
+    plan,
+    status: normalizedStatus,
+    startedAt: latest?.startsAt ?? new Date().toISOString(),
+    renewsAt: status?.hasActivePayment ? status?.endsAt : undefined,
+    pricePerMonth,
+    currency,
+    features: featuresFromPlan.length ? featuresFromPlan : ['10 pins/month', 'Basic search'],
+  };
+}
+
+function mapHistoryToUIPayments(history: Awaited<ReturnType<typeof fetchPaymentHistory>>): UIPayment[] {
+  return (history ?? []).map((p) => {
+    const method: UIPayment['method'] = 'CARD'; // normalizamos (tu UI acepta uno de estos)
+    const status = p.status as UIPayment['status']; // mapeo directo
+
+    return {
+      id: String(p.id),
+      date: p.date,
+      description: p.description,
+      method,
+      status,
+      amount: p.usdPrice,
+      currency: 'USD',
+    };
+  });
 }
 
 export default function DashboardView() {
@@ -69,6 +134,7 @@ export default function DashboardView() {
   const [liked, setLiked] = useState<Post[]>([]);
 
   useEffect(() => {
+     console.log("[DashboardView] auth:", { isHydrated, isAuthenticated, authUser });
     if (!isHydrated || !isAuthenticated || !authUser?.id) return;
 
     (async () => {
@@ -78,70 +144,77 @@ export default function DashboardView() {
         const res = await authFetch(`${API}/users/${authUser.id}`);
         if (res.ok) backendUser = (await res.json()) as APIUser;
 
-        const merged: UserProfile = {
-          id: backendUser?.id ?? authUser.id ?? mockUser.id,
-          name: backendUser?.name ?? authUser.name ?? mockUser.name,
-          username: backendUser?.username ?? mockUser.username,
-          email: backendUser?.email ?? authUser.email ?? mockUser.email,
-
-          // 🔁 nombres correctos del backend
-          avatar: backendUser?.profilePicture ?? mockUser.avatar,
-          bio: backendUser?.biography ?? mockUser.bio,
-
-          joinDate: toIsoStringSafe(backendUser?.createdAt) ?? mockUser.joinDate,
-
-          // lo actualizaremos tras cargar posts reales
-          postsCount:
-            typeof backendUser?.pinsCount === 'number'
-              ? backendUser.pinsCount
-              : mockUser.postsCount,
-
-          // de momento siguen mock
-          subscription: mockUser.subscription,
-          payments: mockUser.payments,
+        const baseUser: UserProfile = {
+          id: backendUser?.id ?? authUser.id,
+          name: backendUser?.name ?? authUser.name ?? authUser.email,
+          username: backendUser?.username ?? null,
+          email: backendUser?.email ?? authUser.email,
+          avatar: backendUser?.profilePicture ?? "",  // si está vacío, lo muestras como placeholder en el <Image>
+          bio: backendUser?.biography ?? "",
+          joinDate: toIsoStringSafe(backendUser?.createdAt) ?? "",
+          postsCount: typeof backendUser?.pinsCount === 'number' ? backendUser.pinsCount : 0,
+          // se completan luego:
+          subscription: {
+            plan: "Free",
+            status: "active",
+            startedAt: new Date().toISOString(),
+            pricePerMonth: 0,
+            currency: "USD",
+            features: ['10 pins/month', 'Basic search'],
+          },
+          payments: [],
         };
-        setUser(merged);
 
         // 2) posts propios + likes (reales)
-        try {
-          const [p, l] = await Promise.all([
-            fetchUserPins(merged.id),
-            fetchUserLikedPins(merged.id),
-          ]);
+        const [p, l] = await Promise.all([
+          fetchUserPins(baseUser.id),
+          fetchUserLikedPins(baseUser.id),
+        ]);
 
-          const pUi = p.map(uiPostToMockPost);
-          const lUi = l.map(uiPostToMockPost);
+        const pUi = p.map(uiPostToUI);
+        const lUi = l.map(uiPostToUI);
 
-          setPosts(pUi);
-          setLiked(lUi);
+        // 3) suscripción/pagos
+        const [status, history] = await Promise.all([
+          fetchSubscriptionStatus(baseUser.id),
+          fetchPaymentHistory(baseUser.id),
+        ]);
 
-          // 🔢 fuente de verdad = cantidad real obtenida
-          setUser((prev) => (prev ? { ...prev, postsCount: pUi.length } : prev));
-        } catch {
-          // fallback a mocks si falla la API de listados
-          setPosts(mockPosts);
-          setLiked(mockLiked);
-          setUser((prev) => (prev ? { ...prev, postsCount: mockUser.postsCount } : prev));
-        }
+        const subUI = mapStatusToUISubscription(status, history);
+        const payUI = mapHistoryToUIPayments(history);
 
-        // 3) aviso de fallback si faltan campos clave
-        const usingFallback =
-          !backendUser?.profilePicture ||
-          !backendUser?.biography ||
-          !backendUser?.createdAt ||
-          backendUser?.pinsCount == null;
-        const dismissed = localStorage.getItem('fallback_notice_dismissed') === '1';
-        if (usingFallback && !dismissed) setShowNotice(true);
-      } catch {
-        // si falla /users/:id
         setUser({
-          ...mockUser,
-          id: authUser?.id ?? mockUser.id,
-          name: authUser?.name ?? mockUser.name,
-          email: authUser?.email ?? mockUser.email,
+          ...baseUser,
+          postsCount: pUi.length,
+          subscription: subUI,
+          payments: payUI,
         });
-        setPosts(mockPosts);
-        setLiked(mockLiked);
+        setPosts(pUi);
+        setLiked(lUi);
+
+      } catch {
+        // Fallback mínimo si falla /users/:id
+        setUser({
+          id: authUser.id,
+          name: authUser.name ?? authUser.email,
+          username: null,
+          email: authUser.email,
+          avatar: "",
+          bio: "",
+          joinDate: new Date().toISOString(),
+          postsCount: 0,
+          subscription: {
+            plan: "Free",
+            status: "active",
+            startedAt: new Date().toISOString(),
+            pricePerMonth: 0,
+            currency: "USD",
+            features: ['10 pins/month', 'Basic search'],
+          },
+          payments: [],
+        });
+        setPosts([]);
+        setLiked([]);
         const dismissed = localStorage.getItem('fallback_notice_dismissed') === '1';
         if (!dismissed) setShowNotice(true);
       }
@@ -151,26 +224,15 @@ export default function DashboardView() {
   if (!isHydrated) return null;
   if (!user) return <div className="text-white p-6">Loading…</div>;
 
-  const counts = {
-    posts: posts.length, // 👈 contador real
-    likes: liked.length,
-  };
+  const counts = { posts: posts.length, likes: liked.length };
 
-  // 🖼️ flujo para guardar avatar en backend
   const handleSaveAvatar = async (file: File) => {
     try {
-      const sig = await getCloudinarySignature();
+      const sig = await getAvatarSignature(user.id);
       const { secure_url, public_id } = await uploadAvatarToCloudinary(file, sig);
-      const updated = await setProfilePicture(user.id, public_id); // backend devuelve User
-
+      const updated = await setProfilePicture(user.id, public_id);
       setUser((prev) =>
-        prev
-          ? {
-              ...prev,
-              // Preferimos el valor del backend, si no viene usamos secure_url
-              avatar: updated.profilePicture ?? secure_url ?? prev.avatar,
-            }
-          : prev
+        prev ? { ...prev, avatar: updated.profilePicture ?? secure_url ?? prev.avatar } : prev
       );
     } catch (e) {
       console.error('Error updating avatar:', e);
@@ -206,7 +268,7 @@ export default function DashboardView() {
         open={showAvatar}
         onClose={() => setShowAvatar(false)}
         currentUrl={user.avatar}
-        onSave={handleSaveAvatar} // 👈 ahora sube y guarda en backend
+        onSave={handleSaveAvatar}
       />
 
       <ProfileEditModal

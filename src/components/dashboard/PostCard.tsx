@@ -1,13 +1,12 @@
 // src/components/dashboard/PostCard.tsx
 "use client";
 
-import { Post } from "@/mocks/userMocks";
+import { Post } from "@/types/ui";
 import { FiHeart, FiEye } from "react-icons/fi";
 
 export default function PostCard({ post }: { post: Post }) {
   return (
     <article className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/5 shadow">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={post.imageUrl}
         alt={post.title}
