@@ -17,6 +17,9 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 import { useSearchContext } from "@/context/SearchContext";
+import insspira from "../../../public/insspira.png";
+import Image from "next/image";
+
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -49,10 +52,11 @@ export default function NavBar() {
           <div className="flex items-center gap-2">
             <Link
               href="/"
-              className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--color-blanco)] text-[var(--color-violeta)] font-[lora] text-[10px] sm:text-[11px]"
+              className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10"
               aria-label="Insspira - Home"
             >
-              Logo
+              <Image src={insspira} width={40} height={40} alt="logo de Insspira"
+              className="rounded-xl"/>
             </Link>
             <Link
               href="/"

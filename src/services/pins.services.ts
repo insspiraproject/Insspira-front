@@ -49,6 +49,7 @@ export interface UIPinModal {
   comment: number;
   views: number;
   created: string;
+  comments: IComment[];
 }
 
 interface PinByIdResponse {
@@ -60,6 +61,7 @@ interface PinByIdResponse {
   name: string;
   views: number;
   created: string;
+  comments: IComment[]
 }
 // ✅ sin any: estrecha a un tipo auxiliar
 function explainAxiosError(err: unknown) {
@@ -106,6 +108,7 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
       comment: data.comment ?? 0,  
       views: data.views ?? 0,
       created: data.created ?? null,
+      comments: data.comments
     };
   } catch (err) {
     console.error("getPinById failed:", err);
@@ -220,6 +223,23 @@ export const addComment = async (pinId: string, text: string) => {
       )
       return res;
     } catch (error) {
-      console.error("Error making a comment")
+      console.error("Error making a comment", error);
     }
 }
+
+// --- Crear Reporte ---
+export const reportTarget = async (
+  targetType: "PIN" | "COMMENT",
+  targetId: string,
+  type: "SPAM" | "INAPPROPRIATE" | "COPYRIGHT",
+  reason?: string
+) => {
+  const token = localStorage.getItem("auth:token");
+  if (!token || !targetId) return null;
+
+  return api.post(
+    "/reports",
+    { targetType, targetId, type, reason }, // 👈 DTO
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};

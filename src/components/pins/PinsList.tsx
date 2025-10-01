@@ -79,7 +79,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
       {isOpen && pinSelected && (
         <PinModal
           id={pinSelected}
-          likesState={likesState[pinSelected] ?? { likeView: false, likesCount: 0 }}
+          likesState={likesState[pinSelected] ?? { likesView: false, likesCount: 0 }}
           setLikesState={(newState) =>
             setLikesState(prev => ({ ...prev, [pinSelected]: newState }))
           }

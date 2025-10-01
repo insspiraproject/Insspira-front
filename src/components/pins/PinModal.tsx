@@ -1,19 +1,23 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { getPinById, addLike } from "@/services/pins.services";
-import { addComment } from "@/services/pins.services";
+import { getPinById, addLike, addComment, reportTarget } from "@/services/pins.services";
 import Image from "next/image";
 import { IoClose } from "react-icons/io5";
 import { FcLike } from "react-icons/fc";
 import { AiOutlineEye } from "react-icons/ai";
+import { FaRegPaperPlane } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
-import { FaRegPaperPlane } from "react-icons/fa6";
 
 interface PinModalProps {
   id: string;
   onClose: () => void;
+  likesState?: {
+    likeView: boolean;
+    likesCount: number;
+  };
+  setLikesState?: (newState: { likeView: boolean; likesCount: number }) => void;
 }
 
 interface PinModalType {
@@ -32,19 +36,31 @@ interface CommentType {
   text: string;
 }
 
+// --- Tipado para los reportes ---
+type ReportType = 'SPAM' | 'INAPPROPRIATE' | 'COPYRIGHT';
+
 const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
   const [pin, setPin] = useState<PinModalType | null>(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<CommentType[]>([]);
   const [newComment, setNewComment] = useState("");
 
+  // --- Estado para reporte ---
+  const [showReportMenu, setShowReportMenu] = useState(false);
+  const [reportType, setReportType] = useState<ReportType>('SPAM');
+  const [reason, setReason] = useState("");
+
   useEffect(() => {
     const fetchPin = async () => {
       setLoading(true);
       const data = await getPinById(id);
-      setPin(data);
-      // Inicializamos comentarios vacíos o si el backend los devuelve, los seteamos
-      setComments([]);
+      if (data) {
+        setPin(data);
+        setComments(data.comments || []);
+      } else {
+        setPin(null);
+        setComments([]);
+      }
       setLoading(false);
     };
     fetchPin();
@@ -52,7 +68,6 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
 
   const handleLike = async () => {
     if (!pin) return;
-
     try {
       await addLike(pin.id);
       setPin({ ...pin, likes: pin.likes + 1 });
@@ -66,23 +81,34 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
     }
   };
 
- const handleAddComment = async () => {
-  if (!pin || !newComment.trim()) return;
-
-  try {
-    const res = await addComment(pin.id, newComment);
-    if (!res) return
-    setComments([...comments, res.data]); 
-    setNewComment("");
-  } catch (err) {
-    const error = err as AxiosError;
-    if (error.response?.status === 403) {
-      toast.error("You have reached your daily comment limit.");
-    } else {
-      toast.error("Failed to add comment. Try again.");
+  const handleAddComment = async () => {
+    if (!pin || !newComment.trim()) return;
+    try {
+      const res = await addComment(pin.id, newComment);
+      if (!res) return;
+      setComments([...comments, res.data]);
+      setNewComment("");
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        toast.error("You have reached your daily comment limit.");
+      } else {
+        toast.error("Failed to add comment. Try again.");
+      }
     }
-  }
-};
+  };
+
+  const handleReport = async () => {
+    if (!pin) return;
+    try {
+      await reportTarget("PIN", pin.id, reportType, reason);
+      toast.success("Reporte enviado con éxito");
+      setShowReportMenu(false);
+      setReason("");
+    } catch {
+      toast.error("Error al enviar el reporte");
+    }
+  };
 
   if (loading) {
     return (
@@ -110,6 +136,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
       <div className="bg-gradient-to-r from-[#0E172B]/90 to-[#1B273B] rounded-lg 
                       flex flex-col md:flex-row w-full max-w-[900px] max-h-[90%] 
                       shadow-xl shadow-slate-800/50 overflow-hidden relative">
+        {/* Botón cerrar */}
         <button
           onClick={onClose}
           className="absolute top-2 right-2 md:top-3 md:right-3 z-10 text-white hover:text-gray-300"
@@ -132,14 +159,14 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
           <h3 className="font-[montserrat] text-lg mb-2">{pin.name}</h3>
           <p className="mb-4">{pin.description}</p>
 
-          {/* Caja de comentarios */}
+          {/* Comentarios */}
           <div className="flex-1 flex flex-col">
             <div className="w-full h-40 md:h-56 border border-gray-500 rounded-t-lg overflow-y-auto p-2">
               {comments.length === 0 ? (
                 <p className="text-gray-400 text-sm">No comments yet</p>
               ) : (
-                comments.map((c) => (
-                  <p key={comments.id} className="text-white text-sm mb-1">{c.text}</p>
+                comments.map((comment) => (
+                  <p key={comment.id} className="text-white text-sm mb-1">{comment.text}</p>
                 ))
               )}
             </div>
@@ -161,19 +188,73 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
             </div>
           </div>
 
-          {/* Likes y Views */}
+          {/* Likes, Views y Reporte */}
           <div className="flex items-center mt-4 space-x-4">
             <button className="flex items-center hover:text-pink-500" onClick={handleLike}>
-              <FcLike size={24} color="gray"/>
+              <FcLike size={24}/>
               <span className="ml-1">{pin.likes}</span>
             </button>
             <div className="flex items-center">
               <AiOutlineEye size={22} />
               <span className="ml-1">{pin.views}</span>
             </div>
+
+            {/* Botón Reportar */}
+            <button
+              className="ml-auto text-sm bg-red-600 px-3 py-1 rounded hover:bg-red-700"
+              onClick={() => setShowReportMenu(true)}
+            >
+              Reportar
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Modal Reporte */}
+      {showReportMenu && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 text-gray-200">
+          <div className="bg-gradient-to-r from-[#0E172B]/90 to-[#1B273B] rounded-lg 
+                      flex flex-col p-4 w-80">
+            <h2 className="text-lg font-semibold mb-3">Reportar Pin</h2>
+
+            <label className="block mb-2 text-sm">Motivo</label>
+            <select
+              className="w-full border px-2 py-1 rounded mb-3"
+              value={reportType}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                setReportType(e.target.value as ReportType)
+              }
+            >
+              <option value="SPAM">Spam</option>
+              <option value="INAPPROPRIATE">Contenido inapropiado</option>
+              <option value="COPYRIGHT">Copyright</option>
+            </select>
+
+            <label className="block mb-2 text-sm">Detalle (opcional)</label>
+            <textarea
+              className="w-full border px-2 py-1 rounded mb-3"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Explica brevemente..."
+            />
+
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-3 py-1 text-black font-semibold bg-gray-300 rounded-md hover:bg-red-300"
+                onClick={() => setShowReportMenu(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-300 hover:text-red-600 font-semibold"
+                onClick={handleReport}
+              >
+                Reportar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
