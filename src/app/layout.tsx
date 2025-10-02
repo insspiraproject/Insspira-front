@@ -9,7 +9,6 @@ import { ToastContainer } from "react-toastify";
 import ChatBot from "@/components/chatBot/ChatBot";
 import { AuthProvider } from "@/context/AuthContext";
 import { SearchProvider } from "@/context/SearchContext";
-import  AuthGate  from "@/components/auth/AuthGate";
 import AuthBootstrap from "@/components/auth/AuthBootstrap";
 
 // Usa arrays y agrega display: 'swap'. Evita strings vacíos.
