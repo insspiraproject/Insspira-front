@@ -170,7 +170,7 @@ export const LoginUser = async (
 
 // loginWithPassport
  export function loginWithPassport(): void {
-  window.location.href = `${API_BASE}/auth/google/callback`; 
+  window.location.href = `${API_BASE}/auth/google`; 
 }
 
 interface MeResponse {
