@@ -21,7 +21,7 @@ export interface LoginResponse {
 
 export type RegisterResponse = LoginResponse;
 
-const API_BASE =
+export const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") ?? "http://localhost:3000";
 
 /* ================= helpers ================= */
@@ -168,55 +168,33 @@ export const LoginUser = async (
   }
 };
 
-/* ============= Soporte Auth0: login + guardado token de callback ============= */
-
-// Redirige a la ruta de login del proveedor (Auth0) expuesta en tu backend (por ejemplo /login)
-export function loginWithAuth0(): void {
-  const path = process.env.NEXT_PUBLIC_AUTH0_LOGIN_PATH || "/login";
-  window.location.href = `${API_BASE}${path}`;
+// loginWithPassport
+ export function loginWithPassport(): void {
+  window.location.href = `${API_BASE}/auth/google/callback`; 
 }
-
-// Guarda ?token=... (callback de Auth0) y actualiza el AuthContext con setAuth
-export async function saveTokenFromQueryAndHydrateAuth(
-  setAuth: (user: AuthUser | null, token: string | null) => void
-): Promise<void> {
-  if (typeof window === "undefined") return;
-  const url = new URL(window.location.href);
-  const token = url.searchParams.get("token");
-  if (!token) return;
-
-  localStorage.setItem("auth:token", token);
-  const user = await getUserFromToken(token);
-  if (user) localStorage.setItem("auth:user", JSON.stringify(user));
-  setAuth(user ?? null, token);
-
-  url.searchParams.delete("token");
-  window.history.replaceState({}, document.title, url.toString());
-}
-
-/* ================= getMe() para tu hook useUser ================= */
 
 interface MeResponse {
-  user?: APIUser | null;          // devuelto por tu /auth/me cuando hay sesión
-  oidcUser?: { sub?: string; email?: string; name?: string } | null; // opcional en tu back
+  user?: {
+    id: string;
+    name?: string;
+    username?: string;
+    email: string;
+    isAdmin?: boolean;
+  } | null;
   message?: string;
 }
 
 export async function getMe(): Promise<AuthUser | null> {
   try {
-    // soporta ambas claves que usas en el front
-    const token =
-      (typeof window !== "undefined" && (localStorage.getItem("auth:token") || localStorage.getItem("token"))) ||
-      null;
-
     const res = await fetch(`${API_BASE}/auth/me`, {
       method: "GET",
-      credentials: "include", // por si tu back usa cookie de Auth0
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      credentials: "include", // 🔑 manda la cookie al backend
     });
 
-    const data = await safeJson<MeResponse>(res);
-    // si el back retorna un 'user' ya normalizado
+    if (!res.ok) return null;
+
+    const data: MeResponse = await res.json();
+
     if (data?.user) {
       const u = data.user;
       return {
@@ -227,14 +205,9 @@ export async function getMe(): Promise<AuthUser | null> {
       };
     }
 
-    // fallback: si tenemos token, decodificamos y completamos llamando /users/:id
-    if (token) {
-      const user = await getUserFromToken(token);
-      if (user) return user;
-    }
-
     return null;
   } catch {
     return null;
   }
 }
+
