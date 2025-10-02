@@ -186,14 +186,25 @@ interface MeResponse {
 
 export async function getMe(): Promise<AuthUser | null> {
   try {
+    console.log('Fetching user data from:', `${API_BASE}/auth/me`);
+    
     const res = await fetch(`${API_BASE}/auth/me`, {
       method: "GET",
-      credentials: "include", // 🔑 manda la cookie al backend
+      credentials: "include", 
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
-    if (!res.ok) return null;
+    console.log('Response status:', res.status);
+    
+    if (!res.ok) {
+      console.log('Response not OK, status:', res.status);
+      return null;
+    }
 
     const data: MeResponse = await res.json();
+    console.log('User data received:', data);
 
     if (data?.user) {
       const u = data.user;
@@ -206,8 +217,9 @@ export async function getMe(): Promise<AuthUser | null> {
     }
 
     return null;
-  } catch {
-    return null;
-  }
+  } catch (error) {
+    console.error('Error in getMe:', error);
+    return null;
+  }
 }
 
