@@ -1,10 +1,24 @@
 "use client";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-export default function AuthGate({ children }: { children: React.ReactNode }) {
-  const { isChecking, isHydrated } = useAuth();
+interface AuthGateProps {
+  children: React.ReactNode;
+  requireAuth?: boolean; // si true, redirige a login si no hay user
+}
 
-  if (!isHydrated || isChecking) {
+export default function AuthGate({ children, requireAuth = false }: AuthGateProps) {
+  const { isChecking, isHydrated, user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isChecking && isHydrated && requireAuth && !user) {
+      router.push("/login");
+    }
+  }, [isChecking, isHydrated, requireAuth, user, router]);
+
+  if (!isHydrated || (requireAuth && isChecking)) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
         <span>Cargando sesión...</span>
