@@ -38,6 +38,24 @@ export interface AuthContextValue extends AuthState {
 const USER_KEY = "auth:user";
 const TOKEN_KEY = "auth:token";
 
+// type JwtPayload = {
+//   sub?: string;
+//   email?: string;
+//   name?: string;
+//   isAdmin?: boolean;
+// };
+
+// function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
+//   try {
+//     const [, payload] = token.split(".");
+//     if (!payload) return null;
+//     const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+//     return JSON.parse(json) as T;
+//   } catch {
+//     return null;
+//   }
+// }
+
 
 function readStorage(): AuthState {
   if (typeof window === "undefined") return { user: null, token: null };
@@ -61,30 +79,6 @@ function writeStorage(next: AuthState) {
   }
 }
 
-          // /** 👉 Cookies para que el middleware pueda redirigir estrictamente */
-          // function writeCookies(user: AuthUser | null, token: string | null) {
-          //   if (typeof document === "undefined") return;
-          //   const maxAge = 60 * 60 * 24 * 30; // 30 días
-          //   const attrs = `Path=/; Max-Age=${maxAge}; SameSite=Lax${typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : ""}`;
-
-          //   // auth_token (solo señal de sesión para el middleware)
-          //   if (token) {
-          //     document.cookie = `auth_token=${encodeURIComponent(token)}; ${attrs}`;
-          //   } else {
-          //     document.cookie = `auth_token=; Path=/; Max-Age=0; SameSite=Lax`;
-          //   }
-
-          //   // role (admin | user) — fuente: user.role o, si hay token, del payload
-          //   let role: "admin" | "user" | "" = "";
-          
-
-          //   if (role) {
-          //     document.cookie = `role=${role}; ${attrs}`;
-          //   } else {
-          //     document.cookie = `role=; Path=/; Max-Age=0; SameSite=Lax`;
-          //   }
-          // }
-
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -94,10 +88,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const setAuth = useCallback((user: AuthUser | null, token: string | null) => {
     setState({ user, token });
-    writeStorage({ user, token }); // sigue persistiendo si hay token
+    writeStorage({ user, token });
   }, []);
 
-  // ✅ bootstrap: intentar sesión con cookie
+  // ✅ sincronización multi-tab con localStorage
+  useEffect(() => {
+    setIsHydrated(true);
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === USER_KEY || e.key === TOKEN_KEY) {
+        setState(readStorage());
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  // ✅ bootstrap: intentar sesión con cookie (Passport)
   useEffect(() => {
     let cancelled = false;
     setIsChecking(true);
@@ -106,14 +114,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const me = await getMe(); // usa cookie de passport
         if (!cancelled && me) {
-          setAuth(me, null);
+          // 🔑 mantenemos token local si ya existía
+          setAuth(me, state.token);
         }
       } catch (err) {
         console.error("Auth bootstrap error:", err);
       } finally {
         if (!cancelled) {
           setIsChecking(false);
-          setIsHydrated(true);
         }
       }
     })();
@@ -121,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [setAuth]);
+  }, [setAuth, state.token]);
 
   const login = useCallback(
     async (values: LoginFormValues) => {
@@ -173,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextValue = useMemo(
     () => ({
       ...state,
-      isAuthenticated: Boolean(state.user || state.token),
+      isAuthenticated: Boolean(state.user), // ✅ más seguro: requiere user
       isAdmin: state.user?.role === "admin",
       isHydrated,
       isChecking,
