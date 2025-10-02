@@ -61,6 +61,30 @@ function writeStorage(next: AuthState) {
   }
 }
 
+/** 👉 Cookies para que el middleware pueda redirigir estrictamente */
+function writeCookies(user: AuthUser | null, token: string | null) {
+  if (typeof document === "undefined") return;
+  const maxAge = 60 * 60 * 24 * 30; // 30 días
+  const attrs = `Path=/; Max-Age=${maxAge}; SameSite=Lax${typeof location !== "undefined" && location.protocol === "https:" ? "; Secure" : ""}`;
+
+  // auth_token (solo señal de sesión para el middleware)
+  if (token) {
+    document.cookie = `auth_token=${encodeURIComponent(token)}; ${attrs}`;
+  } else {
+    document.cookie = `auth_token=; Path=/; Max-Age=0; SameSite=Lax`;
+  }
+
+  // role (admin | user) — fuente: user.role o, si hay token, del payload
+  let role: "admin" | "user" | "" = "";
+ 
+
+  if (role) {
+    document.cookie = `role=${role}; ${attrs}`;
+  } else {
+    document.cookie = `role=; Path=/; Max-Age=0; SameSite=Lax`;
+  }
+}
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

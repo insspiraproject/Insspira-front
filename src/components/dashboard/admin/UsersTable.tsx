@@ -1,14 +1,21 @@
 // src/components/admin/UsersTable.tsx
 "use client";
 
-import { managedUsers } from "@/mocks/adminMocks";
 import Image from "next/image";
-import { useMemo, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
+import {
+  fetchAdminUsers,
+  setAdminUserStatus,
+  type AdminUser,
+} from "@/services/dashboardAdmin";
 
 export default function UsersTable() {
   const [q, setQ] = useState("");
-  const [rows, setRows] = useState(managedUsers);
+  const [rows, setRows] = useState<AdminUser[]>([]);
+
+  useEffect(() => {
+    fetchAdminUsers().then(({ users }) => setRows(users));
+  }, []);
 
   const filtered = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -16,17 +23,17 @@ export default function UsersTable() {
     return rows.filter(
       (u) =>
         u.name.toLowerCase().includes(t) ||
-        u.username.toLowerCase().includes(t) ||
+        (u.username ?? "").toLowerCase().includes(t) ||
         u.email.toLowerCase().includes(t)
     );
   }, [q, rows]);
 
-  const toggleStatus = (id: string) => {
-    setRows((prev) =>
-      prev.map((u) =>
-        u.id === id ? { ...u, status: u.status === "active" ? "suspended" : "active" } : u
-      )
-    );
+  const toggleStatus = async (id: string) => {
+    const u = rows.find((x) => x.id === id);
+    if (!u) return;
+    const next = u.status === "active" ? "suspended" : "active";
+    const updated = await setAdminUserStatus(id, next);
+    setRows((prev) => prev.map((x) => (x.id === id ? { ...x, status: updated.status } : x)));
   };
 
   return (
@@ -58,7 +65,7 @@ export default function UsersTable() {
               <tr key={u.id} className="border-b border-white/5">
                 <td className="flex items-center gap-2">
                   <Image
-                    src={u.avatar}
+                    src={u.avatar || "/images/default-avatar.png"}
                     alt={u.name}
                     width={32}
                     height={32}

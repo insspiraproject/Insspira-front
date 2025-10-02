@@ -1,7 +1,7 @@
 // src/components/dashboard/SubscriptionModal.tsx
 "use client";
 
-import { Subscription, Payment } from "@/mocks/userMocks";
+import type { UISubscription, UIPayment } from "@/types/ui";
 import { FiX } from "react-icons/fi";
 
 export default function SubscriptionModal({
@@ -12,8 +12,8 @@ export default function SubscriptionModal({
 }: {
   open: boolean;
   onClose: () => void;
-  subscription: Subscription;
-  payments: Payment[];
+  subscription: UISubscription;
+  payments: UIPayment[];
 }) {
   if (!open) return null;
 
@@ -35,32 +35,19 @@ export default function SubscriptionModal({
           <div className="rounded-xl bg-white/5 p-4 border border-white/10">
             <h3 className="font-semibold mb-2">Plan</h3>
             <ul className="space-y-1 text-sm">
-              <li>
-                <strong>Plan:</strong> {subscription.plan}
-              </li>
-              <li>
-                <strong>Status:</strong> {subscription.status}
-              </li>
-              <li>
-                <strong>Start:</strong>{" "}
-                {new Date(subscription.startedAt).toLocaleDateString()}
-              </li>
+              <li><strong>Plan:</strong> {subscription.plan}</li>
+              <li><strong>Status:</strong> {subscription.status}</li>
+              <li><strong>Start:</strong> {new Date(subscription.startedAt).toLocaleDateString()}</li>
               {subscription.renewsAt && (
-                <li>
-                  <strong>Renews:</strong>{" "}
-                  {new Date(subscription.renewsAt).toLocaleDateString()}
-                </li>
+                <li><strong>Renews:</strong> {new Date(subscription.renewsAt).toLocaleDateString()}</li>
               )}
               <li>
-                <strong>Price:</strong> {subscription.pricePerMonth}{" "}
-                {subscription.currency}/month
+                <strong>Price:</strong> {subscription.pricePerMonth} {subscription.currency}/month
               </li>
             </ul>
             <h4 className="font-semibold mt-4 mb-1">Benefits</h4>
             <ul className="list-disc list-inside text-sm text-white/90">
-              {subscription.features.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
+              {subscription.features.map((f) => <li key={f}>{f}</li>)}
             </ul>
           </div>
 
@@ -84,9 +71,7 @@ export default function SubscriptionModal({
                       <td className="pr-2">{p.description}</td>
                       <td>{p.method}</td>
                       <td>{p.status}</td>
-                      <td className="whitespace-nowrap">
-                        {p.amount} {p.currency}
-                      </td>
+                      <td className="whitespace-nowrap">{p.amount} {p.currency}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -96,10 +81,7 @@ export default function SubscriptionModal({
         </div>
 
         <div className="p-5 border-t border-white/10 text-right">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-white text-[var(--color-violeta)]"
-          >
+          <button onClick={onClose} className="px-4 py-2 rounded-lg bg-white text-[var(--color-violeta)]">
             Close
           </button>
         </div>
