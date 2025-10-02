@@ -9,7 +9,7 @@ import { ToastContainer } from "react-toastify";
 import ChatBot from "@/components/chatBot/ChatBot";
 import { AuthProvider } from "@/context/AuthContext";
 import { SearchProvider } from "@/context/SearchContext";
-import AuthBootstrap from "@/components/auth/AuthBootstrap";
+
 
 // Usa arrays y agrega display: 'swap'. Evita strings vacíos.
 const overlock = Overlock({ weight: ["400"], subsets: ["latin"], variable: "--font-overlock", display: "swap" });
@@ -37,7 +37,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${overlock.variable} ${dmSerif.variable} ${roboto.variable} ${lora.variable} ${montserrat.variable} antialiased`}>
         <ToastContainer position="top-right" theme="dark" />
         <AuthProvider>
-            <AuthBootstrap/>
           <SearchProvider>
         <NavBar />
         {children}

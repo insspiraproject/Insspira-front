@@ -107,30 +107,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // ✅ bootstrap: intentar sesión con cookie (Passport)
   useEffect(() => {
-    let cancelled = false;
-    setIsChecking(true);
+  let cancelled = false;
+  setIsChecking(true);
 
-    (async () => {
-      try {
-        const me = await getMe(); // usa cookie de passport
-        if (!cancelled && me) {
-          // 🔑 mantenemos token local si ya existía
-          setAuth(me, state.token);
-        }
-      } catch (err) {
-        console.error("Auth bootstrap error:", err);
-      } finally {
-        if (!cancelled) {
-          setIsChecking(false);
-        }
+  const fetchUser = async () => {
+    try {
+      // llama siempre a getMe() para rehidratar sesión desde cookie
+      const me = await getMe(); // usa cookie de Passport
+      if (!cancelled && me) {
+        setAuth(me, state.token); // mantiene token local si existe
       }
-    })();
+    } catch (err) {
+      console.error("Auth bootstrap error:", err);
+    } finally {
+      if (!cancelled) setIsChecking(false);
+      if (!cancelled) setIsHydrated(true);
+    }
+  };
 
-    return () => {
-      cancelled = true;
-    };
-  }, [setAuth, state.token]);
+  fetchUser();
 
+  // también revisa query de Google login
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("googleLogin") === "success") {
+    fetchUser(); // fuerza getMe() si viene de redirección Google
+  }
+
+  return () => {
+    cancelled = true;
+  };
+}, [setAuth, state.token]);
   const login = useCallback(
     async (values: LoginFormValues) => {
       const res = await LoginUser(values);
