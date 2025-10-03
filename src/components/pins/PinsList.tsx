@@ -4,7 +4,7 @@ import PinsCard from "@/components/pins/PinsCard";
 import PinModal from "./PinModal";
 import { useEffect, useState } from "react";
 import type { IPins } from "@/interfaces/IPins";
-import { getAllPins } from "@/services/pins.services";
+import { getAllPins, pinViews } from "@/services/pins.services";
 
 interface PinsListProps {
   searchResults: IPins[] | null;

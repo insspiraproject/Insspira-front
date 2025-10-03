@@ -15,6 +15,7 @@ import {
   LoginUser,
   RegisterUser,
   getMe,
+  logoutGoogle
 } from "@/services/authservice";
  import { API_BASE } from "@/services/authservice";
 // import getUserFromToken from "@/services/authservice";
@@ -200,14 +201,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const logout = useCallback(async () => {
+    // 1️⃣ Limpiar estado local siempre
     setAuth(null, null);
+  
     try {
+      // 2️⃣ Logout normal de JWT
       await fetch(`${API_BASE}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
+  
+      // 3️⃣ Logout de Google dentro de la app
+      const googleSuccess = await logoutGoogle();
+      if (!googleSuccess) {
+        console.warn("No se pudo cerrar sesión de Google en la app");
+      }
     } catch (err) {
-      console.warn("Logout cookie error:", err);
+      console.warn("Logout error:", err);
     }
   }, [setAuth]);
 

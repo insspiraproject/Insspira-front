@@ -211,3 +211,17 @@ export async function getMe(): Promise<AuthUser | null> {
   }
 }
 
+export async function logoutGoogle(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/auth/google/logout`, {
+      method: "GET",
+      credentials: "include", // 🔑 manda la cookie al backend para borrarla
+    });
+
+    return res.ok;
+  } catch (err) {
+    console.error("Error cerrando sesión de Google:", err);
+    return false;
+  }
+}
+
