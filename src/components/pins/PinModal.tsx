@@ -9,6 +9,7 @@ import { AiOutlineEye } from "react-icons/ai";
 import { FaRegPaperPlane } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import { IHashtag } from "@/interfaces/IHashtag";
 
 interface PinModalProps {
   id: string;
@@ -29,6 +30,7 @@ interface PinModalType {
   comment: number;
   views: number;
   created: string;
+  hashtag: IHashtag
 }
 
 interface CommentType {
@@ -162,6 +164,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
         <div className="w-full md:w-1/2 p-4 flex flex-col text-white overflow-y-auto">
           <h3 className="font-[montserrat] text-lg mb-2">{pin.name}</h3>
           <p className="mb-4">{pin.description}</p>
+          <p>{pin.hashtag.tag}</p>
 
           {/* Comentarios */}
           <div className="flex-1 flex flex-col">

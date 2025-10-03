@@ -3,6 +3,7 @@ import axios, { type AxiosRequestHeaders } from "axios";
 import type { IPins, IComment } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
+import { IHashtag } from "@/interfaces/IHashtag";
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -50,6 +51,7 @@ export interface UIPinModal {
   views: number;
   created: string;
   comments: IComment[];
+  hashtag: IHashtag
 }
 
 interface PinByIdResponse {
@@ -61,7 +63,8 @@ interface PinByIdResponse {
   name: string;
   views: number;
   created: string;
-  comments: IComment[]
+  comments: IComment[];
+  hashtag: IHashtag;
 }
 // ✅ sin any: estrecha a un tipo auxiliar
 function explainAxiosError(err: unknown) {
@@ -108,7 +111,8 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
       comment: data.comment ?? 0,  
       views: data.views ?? 0,
       created: data.created ?? null,
-      comments: data.comments
+      comments: data.comments,
+      hashtag: data.hashtag
     };
   } catch (err) {
     console.error("getPinById failed:", err);
