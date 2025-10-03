@@ -14,10 +14,9 @@ import {
   AuthUser,
   LoginUser,
   RegisterUser,
-  // 👇 añadidos:
-  saveTokenFromQueryAndHydrateAuth,
   getMe,
 } from "@/services/authservice";
+ import { API_BASE } from "@/services/authservice";
 
 export interface AuthState {
   user: AuthUser | null;
@@ -39,23 +38,24 @@ export interface AuthContextValue extends AuthState {
 const USER_KEY = "auth:user";
 const TOKEN_KEY = "auth:token";
 
-type JwtPayload = {
-  sub?: string;
-  email?: string;
-  name?: string;
-  isAdmin?: boolean;
-};
+// type JwtPayload = {
+//   sub?: string;
+//   email?: string;
+//   name?: string;
+//   isAdmin?: boolean;
+// };
 
-function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
-  try {
-    const [, payload] = token.split(".");
-    if (!payload) return null;
-    const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-    return JSON.parse(json) as T;
-  } catch {
-    return null;
-  }
-}
+// function decodeJwt<T = Record<string, unknown>>(token: string): T | null {
+//   try {
+//     const [, payload] = token.split(".");
+//     if (!payload) return null;
+//     const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+//     return JSON.parse(json) as T;
+//   } catch {
+//     return null;
+//   }
+// }
+
 
 function readStorage(): AuthState {
   if (typeof window === "undefined") return { user: null, token: null };
@@ -82,12 +82,17 @@ function writeStorage(next: AuthState) {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<AuthState>({ user: null, token: null });
+  const [state, setState] = useState<AuthState>(() => readStorage());
   const [isHydrated, setIsHydrated] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
 
+  const setAuth = useCallback((user: AuthUser | null, token: string | null) => {
+    setState({ user, token });
+    writeStorage({ user, token });
+  }, []);
+
+  // ✅ sincronización multi-tab con localStorage
   useEffect(() => {
-    setState(readStorage());
     setIsHydrated(true);
 
     const onStorage = (e: StorageEvent) => {
@@ -95,78 +100,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState(readStorage());
       }
     };
+
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const setAuth = useCallback((user: AuthUser | null, token: string | null) => {
-    setState({ user, token });
-    writeStorage({ user, token });
-  }, []);
-
-  // ✅ Chequeo al hidratar: 1) captura ?token=... de Auth0  2) si no hay token pero hay cookie de sesión, usa /auth/me
+  // ✅ bootstrap: intentar sesión con cookie (Passport)
   useEffect(() => {
-    if (!isHydrated) return;
+  let cancelled = false;
+  setIsChecking(true);
 
-    let cancelled = false;
-    (async () => {
-      setIsChecking(true);
-      try {
-        // 1) Guardar token de callback (?token=...) y setear contexto
-        await saveTokenFromQueryAndHydrateAuth(setAuth);
-
-        // 2) Si seguimos sin user ni token, intentar sesión por cookie (/auth/me)
-        const hasUser = Boolean(readStorage().user);
-        const hasToken = Boolean(readStorage().token);
-        if (!hasUser && !hasToken) {
-          const me = await getMe();
-          if (!cancelled && me) {
-            // no tenemos token (cookie session), pero setear user basta para isAuthenticated
-            setAuth(me, null);
-          }
-        }
-      } catch (err) {
-        console.error("Auth bootstrap error:", err);
-      } finally {
-        if (!cancelled) setIsChecking(false);
+  const fetchUser = async () => {
+    try {
+      // llama siempre a getMe() para rehidratar sesión desde cookie
+      const me = await getMe(); // usa cookie de Passport
+      if (!cancelled && me) {
+        setAuth(me, state.token); // mantiene token local si existe
       }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrated, setAuth]);
-
-  const extractTokenAndUser = (res: unknown): { token: string | null; user: AuthUser | null } => {
-    const anyRes = res as Record<string, unknown>;
-    const token =
-      (anyRes?.token as string | undefined) ??
-      (anyRes?.accessToken as string | undefined) ??
-      null;
-
-    let user = (anyRes?.user as AuthUser | undefined) ?? null;
-
-    if (!user && token) {
-      const payload = decodeJwt<JwtPayload>(token) ?? {};
-      user = {
-        id: payload.sub ?? "",
-        email: payload.email ?? "",
-        name: payload.name ?? (payload.email?.split?.("@")[0] ?? "User"),
-        role: payload.isAdmin ? "admin" : "user",
-      };
+    } catch (err) {
+      console.error("Auth bootstrap error:", err);
+    } finally {
+      if (!cancelled) setIsChecking(false);
+      if (!cancelled) setIsHydrated(true);
     }
-
-    return { token, user };
   };
 
+  fetchUser();
+
+  // también revisa query de Google login
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("googleLogin") === "success") {
+    fetchUser(); // fuerza getMe() si viene de redirección Google
+  }
+
+  return () => {
+    cancelled = true;
+  };
+}, [setAuth, state.token]);
   const login = useCallback(
     async (values: LoginFormValues) => {
       const res = await LoginUser(values);
       if (!res) return false;
-      const { token, user } = extractTokenAndUser(res);
-      setAuth(user, token);
-      return Boolean(user || token);
+      setAuth(res.user ?? null, res.token ?? null);
+      return Boolean(res.user || res.token);
     },
     [setAuth]
   );
@@ -175,33 +151,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (values: RegisterFormValues) => {
       const res = await RegisterUser(values);
       if (!res) return false;
-      const { token, user } = extractTokenAndUser(res);
-      setAuth(user, token);
-      return Boolean(user || token);
+      setAuth(res.user ?? null, res.token ?? null);
+      return Boolean(res.user || res.token);
     },
     [setAuth]
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setAuth(null, null);
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.warn("Logout cookie error:", err);
+    }
   }, [setAuth]);
 
   const authFetch = useCallback(
     async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const headers = new Headers(init?.headers ?? {});
-      const token = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-      if (token && !headers.has("Authorization")) {
-        headers.set("Authorization", `Bearer ${token}`);
+      if (state.token && !headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${state.token}`);
       }
-      return fetch(input, { ...init, headers });
+      return fetch(input, {
+        ...init,
+        headers,
+        credentials: "include", // 🔑 incluye cookie siempre
+      });
     },
-    []
+    [state.token]
   );
 
   const value: AuthContextValue = useMemo(
     () => ({
       ...state,
-      isAuthenticated: Boolean(state.user || state.token),
+      isAuthenticated: Boolean(state.user), // ✅ más seguro: requiere user
       isAdmin: state.user?.role === "admin",
       isHydrated,
       isChecking,
