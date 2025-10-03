@@ -203,7 +203,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     // 1️⃣ Limpiar estado local siempre
     setAuth(null, null);
-  
+     localStorage.removeItem("auth:user");
+    localStorage.removeItem("auth:token");
     try {
       // 2️⃣ Logout normal de JWT
       await fetch(`${API_BASE}/auth/logout`, {

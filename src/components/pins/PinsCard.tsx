@@ -1,7 +1,7 @@
 import { IPins } from "@/interfaces/IPins";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
-import { addLike, deleteLike, pinViews } from "@/services/pins.services";
+import { addLike, deleteLike } from "@/services/pins.services";
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
