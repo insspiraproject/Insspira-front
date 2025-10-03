@@ -1,5 +1,6 @@
 // src/services/pins.services.ts (o src/services/pins.ts)
 import axios, { type AxiosRequestHeaders } from "axios";
+import { Cookie } from "next/font/google";
 import type { IPins, IComment } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
@@ -191,6 +192,7 @@ export const addLike = async (pinId: string) => {
   const token = localStorage.getItem("auth:token");
   if(!pinId || !token) {
     console.log("Error al encontrar pin o token");
+    return null
   } 
 
   return api.post(`/pins/like/${pinId}`,
@@ -206,6 +208,7 @@ export const deleteLike = async (pinId: string) => {
   const token = localStorage.getItem("auth:token");
   if(!pinId || !token) {
     console.log("Error al encontrar pin o token");
+    return null
   }
 
   return api.delete(`/pins/like/${pinId}`,
@@ -218,7 +221,10 @@ export const deleteLike = async (pinId: string) => {
 // --- Create Comment ---
 export const addComment = async (pinId: string, text: string) => {
   const token = localStorage.getItem("auth:token");
-    if (!pinId || !token) return null
+    if (!pinId || !token) {
+      console.log("Error al encontrar el pin o token")
+      return null
+    }
 
     try {
       const res = api.post(`/pins/comments/${pinId}`,
