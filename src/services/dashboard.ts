@@ -111,7 +111,7 @@ export async function updateUserProfile(
   id: string,
   patch: { name?: string; username?: string; email?: string; biography?: string }
 ) {
-  const { data } = await api.patch(`/users/${id}`, patch);
+  const { data } = await api.put(`/users/${id}`, patch);
   return data as BackendUser;
 }
 

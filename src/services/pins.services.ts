@@ -225,8 +225,10 @@ export const deleteLike = async (pinId: string) => {
 export const addComment = async (pinId: string, text: string) => {
   const token = localStorage.getItem("auth:token");
   console.log("pinId que se pasa: ", pinId)
-    if (!pinId || !token) {
-      console.log("Problemas para obtener el token o pinId")
+    if (!pinId) {
+      console.log("pinId no existe")
+    } if(!token) {
+      console.log("token no existe");
     }
 
     try {
