@@ -220,7 +220,6 @@ export const addComment = async (pinId: string, text: string) => {
   const token = localStorage.getItem("auth:token");
     if (!pinId || !token) {
       console.log("Problemas para obtener el token o pinId")
-      return null;
     }
 
     try {
@@ -250,3 +249,8 @@ export const reportTarget = async (
     { headers: { Authorization: `Bearer ${token}` } }
   );
 };
+
+export const pinViews = (pinId: string) => {
+  const response = api.post(`/pins/createView/${pinId}`)
+  return response;
+}
