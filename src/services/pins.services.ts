@@ -188,43 +188,20 @@ export const savePin = async (pin: IUploadPin | UploadPayload) => {
 
 // --- Add Like ---
 export const addLike = async (pinId: string) => {
-  const token = localStorage.getItem("auth:token");
-  if(!pinId || !token) {
-    console.log("Error al encontrar pin o token");
-  } 
-
-  return api.post(`/pins/like/${pinId}`,
-    {},
-    {
-      headers: {Authorization: `Bearer ${token}`}
-    }
-  );
+  return api.post(`/pins/like/${pinId}`,);
 };
 
 // --- Delete Like ---
 export const deleteLike = async (pinId: string) => {
-  const token = localStorage.getItem("auth:token");
-  if(!pinId || !token) {
-    console.log("Error al encontrar pin o token");
-  }
-
-  return api.delete(`/pins/like/${pinId}`,
-    {
-      headers: {Authorization: `Bearer ${token}`}
-    }
-  )
+  return api.delete(`/pins/like/${pinId}`);
 }
 
 // --- Create Comment ---
 export const addComment = async (pinId: string, text: string) => {
-  const token = localStorage.getItem("auth:token");
-    if (!pinId || !token) return null
-
     try {
       const res = api.post(`/pins/comments/${pinId}`,
-        {text},
-        { headers: {Authorization: `Bearer ${token}`}}
-      )
+        {text});
+        
       return res;
     } catch (error) {
       console.error("Error making a comment", error);
