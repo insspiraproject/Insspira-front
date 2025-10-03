@@ -246,11 +246,15 @@ export const reportTarget = async (
   const token = localStorage.getItem("auth:token");
   if (!token || !targetId) return null;
 
-  return api.post(
-    "/reports",
-    { targetType, targetId, type, reason }, // 👈 DTO
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+  try {
+    return api.post(
+      "/reports",
+      { targetType, targetId, type, reason }, // 👈 DTO
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  } catch (error) {
+    console.error("Error al realizar reporte: ", error);
+  }
 };
 
 export const pinViews = async (pinId: string) => {

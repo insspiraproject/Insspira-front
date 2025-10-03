@@ -107,7 +107,8 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
       toast.success("Reporte enviado con éxito");
       setShowReportMenu(false);
       setReason("");
-    } catch {
+    } catch (error) {
+      console.log("error: ", error);
       toast.error("Error al enviar el reporte");
     }
   };
