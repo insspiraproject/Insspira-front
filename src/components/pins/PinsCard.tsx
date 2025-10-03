@@ -1,7 +1,7 @@
 import { IPins } from "@/interfaces/IPins";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
-import { addLike } from "@/services/pins.services";
+import { addLike, deleteLike } from "@/services/pins.services";
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
@@ -20,35 +20,44 @@ interface PinsCardProps {
 const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onOpenModal }) => {
   if (!pin) return null;
 
-  const likes = typeof pin.likesCount === "number" ? pin.likesCount : 0;
   const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
 
   const handleLike = async (e: React.MouseEvent) => {
-  e.stopPropagation(); // evita que se abra el modal al hacer click
+    e.stopPropagation(); // evita abrir el modal
 
-  try {
-    await addLike(pin.id);
-
-    const newState = {
-      likeView: !likesState.likeView,
-      likesCount: likesState.likeView
-        ? likesState.likesCount - 1
-        : likesState.likesCount + 1,
-    };
-    setLikesState(newState);
-
-  } catch (err) {
-    const error = err as AxiosError;
-    if (error.response?.status === 403) {
-      toast.error("You have reached your daily like limit.");
-    } else {
-      toast.error("Something went wrong. Please try again.");
+    try {
+      if (likesState.likeView) {
+        // 👎 Ya tiene like → quitar
+        console.log("Eliminando like de:", pin.id);
+        await deleteLike(pin.id);
+        setLikesState({
+          likeView: false,
+          likesCount: likesState.likesCount - 1,
+        });
+      } else {
+        // 👍 No tiene like → agregar
+        console.log("Agregando like a:", pin.id);
+        await addLike(pin.id);
+        setLikesState({
+          likeView: true,
+          likesCount: likesState.likesCount + 1,
+        });
+      }
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        toast.error("You have reached your daily like limit.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
     }
-  }
-};
+  };
 
   return (
-    <div className="w-full sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] h-auto mt-6 flex flex-col" onClick={onOpenModal}>
+    <div
+      className="w-full sm:max-w-[200px] md:max-w-[250px] lg:max-w-[300px] h-auto mt-6 flex flex-col"
+      onClick={onOpenModal}
+    >
       <SafeImage
         width={500}
         height={500}
@@ -60,18 +69,27 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
 
       <div className="flex flex-col text-xs md:text-sm bg-[var(--color-rosa)] p-2 rounded-b-xl mb-6">
         <div className="flex items-center mb-2">
-          <p>{pin.user}</p>
+          <p className="mr-2">{pin.user}</p>
+
+          {/* Likes */}
           <div className="flex items-center mr-4">
             <button onClick={handleLike}>
-              {likesState.likeView ? <GoHeartFill size={20} color="red"/> : <FiHeart size={20}/>}
+              {likesState.likeView ? (
+                <GoHeartFill size={20} color="red" />
+              ) : (
+                <FiHeart size={20} />
+              )}
             </button>
-            <span className="ml-1">{likes}</span>
+            <span className="ml-1">{likesState.likesCount}</span>
           </div>
+
+          {/* Comments */}
           <div className="flex items-center">
             <FaCommentDots size={18} className="md:size-[20px]" />
             <span className="ml-1">{comments}</span>
           </div>
         </div>
+
         <span className="font-semibold">{pin.description ?? ""}</span>
       </div>
     </div>
