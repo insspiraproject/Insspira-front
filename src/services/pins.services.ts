@@ -230,7 +230,7 @@ export const addComment = async (pinId: string, text: string) => {
     }
 
     try {
-      const res = axios.post(`/pins/comments/${pinId}`,
+      const res = api.post(`/pins/comments/${pinId}`,
         {text},
         { headers: {Authorization: `Bearer ${token}`}}
       )
