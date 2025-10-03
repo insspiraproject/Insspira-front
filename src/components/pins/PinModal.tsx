@@ -84,6 +84,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
   const handleAddComment = async () => {
     if (!pin || !newComment.trim()) return;
     try {
+      console.log(pin.id)
       const res = await addComment(pin.id, newComment);
       console.log(res);
       if (!res) return;
