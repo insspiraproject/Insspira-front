@@ -17,7 +17,7 @@ import {
   getMe,
 } from "@/services/authservice";
  import { API_BASE } from "@/services/authservice";
-
+// import getUserFromToken from "@/services/authservice";
 export interface AuthState {
   user: AuthUser | null;
   token: string | null;
@@ -137,6 +137,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     cancelled = true;
   };
 }, [setAuth, state.token]);
+
+
+
+// useEffect(() => {
+//     if (!isHydrated) return;
+
+//     let cancelled = false;
+
+//     const bootstrap = async () => {
+//       setIsChecking(true);
+//       try {
+//         let user: AuthUser | null = null;
+
+//         if (state.token) {
+//           // flujo login normal con token
+//           user = await getUserFromToken(state.token);
+//         }
+
+//         if (!user) {
+//           // si no hay token válido, intenta cookie Passport
+//           user = await getMe();
+//         }
+
+//         if (!cancelled) {
+//           setAuth(user, state.token); // si no hay user, será null
+//         }
+//       } catch (err) {
+//         console.error("Auth bootstrap error:", err);
+//         if (!cancelled) setAuth(null, null);
+//       } finally {
+//         if (!cancelled) setIsChecking(false);
+//         setIsHydrated(true); // hidrata al final
+//       }
+//     };
+
+//     bootstrap();
+
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [isHydrated, state.token, setAuth]);
+
   const login = useCallback(
     async (values: LoginFormValues) => {
       const res = await LoginUser(values);

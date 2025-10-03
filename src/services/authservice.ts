@@ -59,7 +59,7 @@ type APIUser = {
   isAdmin?: boolean;
 };
 
-async function getUserFromToken(accessToken: string): Promise<AuthUser | null> {
+export default async function getUserFromToken(accessToken: string): Promise<AuthUser | null> {
   try {
     const payload = decodeJwtPayload(accessToken);
     const id = payload?.sub;
@@ -210,3 +210,4 @@ export async function getMe(): Promise<AuthUser | null> {
     return null;
   }
 }
+
