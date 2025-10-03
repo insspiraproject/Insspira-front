@@ -247,7 +247,7 @@ export const reportTarget = async (
   if (!token || !targetId) return null;
 
   try {
-    return await api.post(
+    const respones = await api.post(
       "/reports",
       { targetType, targetId, type, reason }, // 👈 DTO
       { headers: { Authorization: `Bearer ${token}` } }

@@ -103,7 +103,8 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
   const handleReport = async () => {
     if (!pin) return;
     try {
-      await reportTarget("PIN", pin.id, reportType, reason);
+      const res = await reportTarget("PIN", pin.id, reportType, reason);
+      console.log("reporte: ", res);
       toast.success("Reporte enviado con éxito");
       setShowReportMenu(false);
       setReason("");
