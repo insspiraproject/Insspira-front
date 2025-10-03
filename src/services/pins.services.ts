@@ -253,7 +253,11 @@ export const reportTarget = async (
   );
 };
 
-export const pinViews = (pinId: string) => {
-  const response = api.post(`/pins/createView/${pinId}`)
-  return response;
+export const pinViews = async (pinId: string) => {
+  try {
+    const response = await api.post(`/pins/view/${pinId}`)
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
 }
