@@ -189,7 +189,9 @@ export const savePin = async (pin: IUploadPin | UploadPayload) => {
 // --- Add Like ---
 export const addLike = async (pinId: string) => {
   const token = localStorage.getItem("auth:token");
-  if(!pinId || !token) return null
+  if(!pinId || !token) {
+    console.log("Error al encontrar pin o token");
+  } 
 
   return api.post(`/pins/like/${pinId}`,
     {},
@@ -202,7 +204,9 @@ export const addLike = async (pinId: string) => {
 // --- Delete Like ---
 export const deleteLike = async (pinId: string) => {
   const token = localStorage.getItem("auth:token");
-  if(!pinId || !token) return null
+  if(!pinId || !token) {
+    console.log("Error al encontrar pin o token");
+  }
 
   return api.delete(`/pins/like/${pinId}`,
     {
