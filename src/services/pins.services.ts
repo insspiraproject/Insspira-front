@@ -1,6 +1,5 @@
 // src/services/pins.services.ts (o src/services/pins.ts)
 import axios, { type AxiosRequestHeaders } from "axios";
-import { Cookie } from "next/font/google";
 import type { IPins, IComment } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
