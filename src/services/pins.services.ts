@@ -218,7 +218,10 @@ export const deleteLike = async (pinId: string) => {
 // --- Create Comment ---
 export const addComment = async (pinId: string, text: string) => {
   const token = localStorage.getItem("auth:token");
-    if (!pinId || !token) return null
+    if (!pinId || !token) {
+      console.log("Problemas para obtener el token o pinId")
+      return null;
+    }
 
     try {
       const res = api.post(`/pins/comments/${pinId}`,
