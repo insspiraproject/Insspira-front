@@ -17,7 +17,7 @@ import {
   getMe,
 } from "@/services/authservice";
  import { API_BASE } from "@/services/authservice";
-import getUserFromToken from "@/services/authservice";
+// import getUserFromToken from "@/services/authservice";
 export interface AuthState {
   user: AuthUser | null;
   token: string | null;
@@ -106,78 +106,78 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ✅ bootstrap: intentar sesión con cookie (Passport)
-//   useEffect(() => {
-//   let cancelled = false;
-//   setIsChecking(true);
+  useEffect(() => {
+  let cancelled = false;
+  setIsChecking(true);
 
-//   const fetchUser = async () => {
-//     try {
-//       // llama siempre a getMe() para rehidratar sesión desde cookie
-//       const me = await getMe(); // usa cookie de Passport
-//       if (!cancelled && me) {
-//         setAuth(me, state.token); // mantiene token local si existe
-//       }
-//     } catch (err) {
-//       console.error("Auth bootstrap error:", err);
-//     } finally {
-//       if (!cancelled) setIsChecking(false);
-//       if (!cancelled) setIsHydrated(true);
-//     }
-//   };
-
-//   fetchUser();
-
-//   // también revisa query de Google login
-//   const params = new URLSearchParams(window.location.search);
-//   if (params.get("googleLogin") === "success") {
-//     fetchUser(); // fuerza getMe() si viene de redirección Google
-//   }
-
-//   return () => {
-//     cancelled = true;
-//   };
-// }, [setAuth, state.token]);
-
-
-
-useEffect(() => {
-    if (!isHydrated) return;
-
-    let cancelled = false;
-
-    const bootstrap = async () => {
-      setIsChecking(true);
-      try {
-        let user: AuthUser | null = null;
-
-        if (state.token) {
-          // flujo login normal con token
-          user = await getUserFromToken(state.token);
-        }
-
-        if (!user) {
-          // si no hay token válido, intenta cookie Passport
-          user = await getMe();
-        }
-
-        if (!cancelled) {
-          setAuth(user, state.token); // si no hay user, será null
-        }
-      } catch (err) {
-        console.error("Auth bootstrap error:", err);
-        if (!cancelled) setAuth(null, null);
-      } finally {
-        if (!cancelled) setIsChecking(false);
-        setIsHydrated(true); // hidrata al final
+  const fetchUser = async () => {
+    try {
+      // llama siempre a getMe() para rehidratar sesión desde cookie
+      const me = await getMe(); // usa cookie de Passport
+      if (!cancelled && me) {
+        setAuth(me, state.token); // mantiene token local si existe
       }
-    };
+    } catch (err) {
+      console.error("Auth bootstrap error:", err);
+    } finally {
+      if (!cancelled) setIsChecking(false);
+      if (!cancelled) setIsHydrated(true);
+    }
+  };
 
-    bootstrap();
+  fetchUser();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [isHydrated, state.token, setAuth]);
+  // también revisa query de Google login
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("googleLogin") === "success") {
+    fetchUser(); // fuerza getMe() si viene de redirección Google
+  }
+
+  return () => {
+    cancelled = true;
+  };
+}, [setAuth, state.token]);
+
+
+
+// useEffect(() => {
+//     if (!isHydrated) return;
+
+//     let cancelled = false;
+
+//     const bootstrap = async () => {
+//       setIsChecking(true);
+//       try {
+//         let user: AuthUser | null = null;
+
+//         if (state.token) {
+//           // flujo login normal con token
+//           user = await getUserFromToken(state.token);
+//         }
+
+//         if (!user) {
+//           // si no hay token válido, intenta cookie Passport
+//           user = await getMe();
+//         }
+
+//         if (!cancelled) {
+//           setAuth(user, state.token); // si no hay user, será null
+//         }
+//       } catch (err) {
+//         console.error("Auth bootstrap error:", err);
+//         if (!cancelled) setAuth(null, null);
+//       } finally {
+//         if (!cancelled) setIsChecking(false);
+//         setIsHydrated(true); // hidrata al final
+//       }
+//     };
+
+//     bootstrap();
+
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [isHydrated, state.token, setAuth]);
 
   const login = useCallback(
     async (values: LoginFormValues) => {
