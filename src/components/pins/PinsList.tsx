@@ -33,12 +33,18 @@ export default function PinsList({ searchResults }: PinsListProps) {
 
   useEffect(() => {
     if (displayedPins.length === 0) return;
+  
     const initialState = displayedPins.reduce((acc, pin) => {
-      acc[pin.id] = { likeView: pin.likesView || false, likesCount: pin.likesCount };
+      acc[pin.id] = {
+        likeView: pin.liked ?? false,  // <- aquí usamos 'liked' del backend
+        likesCount: pin.likesCount
+      };
       return acc;
     }, {} as Record<string, { likeView: boolean; likesCount: number }>);
+  
     setLikesState(initialState);
   }, [displayedPins]);
+  
 
   useEffect(() => {
     if (pinSelected && displayedPins.every(pin => pin.id !== pinSelected)) {

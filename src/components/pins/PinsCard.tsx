@@ -24,19 +24,17 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation(); // evita abrir el modal
-
+  
     try {
       if (likesState.likeView) {
-        // 👎 Ya tiene like → quitar
-        console.log("Eliminando like de:", pin.id);
+        // Ya tiene like → quitar
         await deleteLike(pin.id);
         setLikesState({
           likeView: false,
           likesCount: likesState.likesCount - 1,
         });
       } else {
-        // 👍 No tiene like → agregar
-        console.log("Agregando like a:", pin.id);
+        // No tiene like → agregar
         await addLike(pin.id);
         setLikesState({
           likeView: true,

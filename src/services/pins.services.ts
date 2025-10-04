@@ -85,7 +85,7 @@ export const getAllPins = async (): Promise<IPins[]> => {
       image: pin.image,
       description: pin.description,
       likesCount: pin.likesCount,
-      likesView: pin.likesView,       
+      liked: pin.liked,       
       commentsCount: pin.commentsCount,  
       views: pin.views,
       user: pin.user,

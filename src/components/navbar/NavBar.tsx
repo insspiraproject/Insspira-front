@@ -51,7 +51,7 @@ export default function NavBar() {
           {/* Brand */}
           <div className="flex items-center gap-2">
             <Link
-              href="/"
+              href="/home"
               className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10"
               aria-label="Insspira - Home"
             >
@@ -59,7 +59,7 @@ export default function NavBar() {
               className="rounded-xl"/>
             </Link>
             <Link
-              href="/"
+              href="/home"
               className="text-base sm:text-xl md:text-2xl font-[lora] text-[var(--color-blanco)]"
             >
               Insspira
