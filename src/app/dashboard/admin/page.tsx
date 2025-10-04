@@ -1,10 +1,11 @@
-// src/app/admin/page.tsx
+// src/app/dashboard/admin/page.tsx
 import RequireAuth from "@/components/auth/RequireAuth";
 import AdminView from "@/view/dashboard/admin/AdminView";
 
 export const metadata = {
   title: "Admin | Insspira",
 };
+
 
 export default function Page() {
   return (

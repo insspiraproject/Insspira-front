@@ -2,12 +2,11 @@
 "use client";
 
 import { JSX } from "react";
-import { FiHome, FiUsers, FiFlag, FiCreditCard, FiBookmark, FiUser, FiLayers } from "react-icons/fi";
+import { FiUsers, FiFlag, FiCreditCard, FiBookmark, FiUser, FiLayers } from "react-icons/fi";
 
-type Key = "overview" | "users" | "reports" | "subscriptions" | "payments" | "plans" | "profile";
+type Key = "users" | "reports" | "subscriptions" | "payments" | "plans" | "profile";
 
 const items: { key: Key; label: string; icon: JSX.Element }[] = [
-  { key: "overview", label: "Overview", icon: <FiHome /> },
   { key: "users", label: "Users", icon: <FiUsers /> },
   { key: "reports", label: "Reports", icon: <FiFlag /> },
   { key: "subscriptions", label: "Subscriptions", icon: <FiBookmark /> },

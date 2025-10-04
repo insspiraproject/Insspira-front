@@ -1,16 +1,21 @@
 // src/components/admin/PaymentsTable.tsx
 "use client";
 
-import { adminPayments, managedUsers } from "@/mocks/adminMocks";
+import { useEffect, useState } from "react";
+import { fetchAdminPayments, type AdminPayment } from "@/services/dashboardAdmin";
 
 export default function PaymentsTable() {
-  const rows = adminPayments
-    .slice()
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .map((p) => {
-      const u = managedUsers.find((x) => x.id === p.userId);
-      return { ...p, userName: u?.name ?? p.userId, email: u?.email ?? "" };
+  const [rows, setRows] = useState<AdminPayment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAdminPayments().then((data) => {
+      // ordena DESC por fecha
+      const sorted = data.slice().sort((a, b) => b.date.localeCompare(a.date));
+      setRows(sorted);
+      setLoading(false);
     });
+  }, []);
 
   return (
     <section className="rounded-2xl bg-white/5 border border-white/10 p-4 text-white">
@@ -28,27 +33,24 @@ export default function PaymentsTable() {
             </tr>
           </thead>
           <tbody className="[&>tr>td]:py-2">
-            {rows.map((p) => (
+            {loading && (
+              <tr><td colSpan={6} className="py-6 text-center opacity-70">Loading…</td></tr>
+            )}
+            {!loading && rows.map((p) => (
               <tr key={p.id} className="border-b border-white/5">
                 <td>{new Date(p.date).toLocaleDateString()}</td>
                 <td>
-                  <div className="font-medium">{p.userName}</div>
-                  <div className="text-xs opacity-80">{p.email}</div>
+                  <div className="font-medium">{p.userName ?? p.userId ?? "-"}</div>
+                  <div className="text-xs opacity-80">{p.email ?? ""}</div>
                 </td>
                 <td>{p.description}</td>
                 <td>{p.method}</td>
                 <td>{p.status}</td>
-                <td>
-                  {p.amount} {p.currency}
-                </td>
+                <td>{p.amount} {p.currency}</td>
               </tr>
             ))}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={6} className="py-6 text-center opacity-70">
-                  No payments
-                </td>
-              </tr>
+            {!loading && rows.length === 0 && (
+              <tr><td colSpan={6} className="py-6 text-center opacity-70">No payments</td></tr>
             )}
           </tbody>
         </table>

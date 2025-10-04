@@ -6,7 +6,7 @@ import { LoginInitialValues, LoginValidationSchema } from "@/validators/LoginSch
 import { FcGoogle } from "react-icons/fc";
 import { FiArrowLeft } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
-import { loginWithAuth0 } from "@/services/authservice";
+import { loginWithPassport } from "@/services/authservice";
 
 export default function FormLogin() {
   const router = useRouter();
@@ -32,7 +32,7 @@ export default function FormLogin() {
         const ok = await login(values);
         if (ok) {
           const role = user?.role ?? getRoleFromStorage();
-          router.push(role === "admin" ? "/admin" : "/dashboard");
+          router.push(role === "admin" ? "dashboard/admin" : "/dashboard");
         }
       } finally {
         setSubmitting(false);
@@ -118,7 +118,7 @@ export default function FormLogin() {
 
             <button
               type="button"
-              onClick={loginWithAuth0}
+              onClick={loginWithPassport}
               className="w-full h-12 rounded-xl bg-white text-[var(--color-violeta)] font-medium border border-white/20 hover:opacity-95 active:scale-[0.99] transition inline-flex items-center justify-center gap-2"
             >
               <FcGoogle className="text-xl" />

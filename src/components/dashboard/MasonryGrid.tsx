@@ -1,7 +1,7 @@
 // src/components/dashboard/MasonryGrid.tsx
 "use client";
 
-import { Post } from "@/mocks/userMocks";
+import { Post } from "@/types/ui";
 import PostCard from "./PostCard";
 
 export default function MasonryGrid({ items }: { items: Post[] }) {

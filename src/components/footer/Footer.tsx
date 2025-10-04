@@ -1,9 +1,10 @@
 "use client";
 
-
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { FaFacebook, FaInstagram, FaTwitter, FaWhatsapp } from "react-icons/fa";
+import insspira from "../../../public/insspira.png"
 
 export default function Footer() {
   const pathname = usePathname();
@@ -19,13 +20,8 @@ export default function Footer() {
           {/* Logo and description */}
           <div className="flex flex-col items-center md:items-start">
             <Link href="/" className="mb-4 inline-block" aria-label="Go to homepage">
-              {/* <Image
-                src="/icon.png"
-                alt="Insspira"
-                width={100}
-                height={60}
-                className="h-auto w-auto transition-transform hover:scale-105"
-              /> */}
+              <Image src={insspira} height={35} width={35} alt="logo insspira"
+              className="h-auto w-auto transition-transform hover:scale-105"/>
             </Link>
             <p className="text-sm text-center md:text-left opacity-90">
               Your destination for quality images. Insspira 2025.

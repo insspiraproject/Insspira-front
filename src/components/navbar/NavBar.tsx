@@ -1,3 +1,4 @@
+// src/components/navbar/NavBar.tsx
 "use client";
 
 import Link from "next/link";
@@ -16,13 +17,16 @@ import {
 } from "react-icons/fi";
 import { useAuth } from "@/context/AuthContext";
 import { useSearchContext } from "@/context/SearchContext";
+import insspira from "../../../public/insspira.png";
+import Image from "next/image";
+
 
 export default function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const { performSearch } = useSearchContext()
+  const { performSearch } = useSearchContext();
   const { isHydrated, isAuthenticated, isAdmin, logout } = useAuth();
 
   if (!isHydrated) return null;
@@ -47,14 +51,15 @@ export default function NavBar() {
           {/* Brand */}
           <div className="flex items-center gap-2">
             <Link
-              href="/"
-              className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--color-blanco)] text-[var(--color-violeta)] font-[lora] text-[10px] sm:text-[11px]"
+              href="/home"
+              className="grid place-items-center w-9 h-9 sm:w-10 sm:h-10"
               aria-label="Insspira - Home"
             >
-              Logo
+              <Image src={insspira} width={40} height={40} alt="logo de Insspira"
+              className="rounded-xl"/>
             </Link>
             <Link
-              href="/"
+              href="/home"
               className="text-base sm:text-xl md:text-2xl font-[lora] text-[var(--color-blanco)]"
             >
               Insspira
@@ -102,22 +107,25 @@ export default function NavBar() {
                 </span>
               </Link>
 
-              {isAuthenticated && (
-               <>
-                <Link href="/dashboard" className={linkBtn}>
-                  <span className="inline-flex items-center gap-1">
-                    <FiUser /> My Dashboard
-                  </span>
-                </Link>
-                <Link href="/uploadPin" className={linkBtn}>
-                  <span className="inline-flex items-center gap-1">
-                    <FiPlus /> Create pin
-                  </span>
-                </Link>
-               </> 
+              {/* User-only items (no admins) */}
+              {isAuthenticated && !isAdmin && (
+                <>
+                  <Link href="/dashboard" className={linkBtn}>
+                    <span className="inline-flex items-center gap-1">
+                      <FiUser /> My Dashboard
+                    </span>
+                  </Link>
+                  <Link href="/uploadPin" className={linkBtn}>
+                    <span className="inline-flex items-center gap-1">
+                      <FiPlus /> Create pin
+                    </span>
+                  </Link>
+                </>
               )}
+
+              {/* Admin-only item */}
               {isAuthenticated && isAdmin && (
-                <Link href="/admin" className={linkBtn}>
+                <Link href="/dashboard/admin" className={linkBtn}>
                   <span className="inline-flex items-center gap-1">
                     <FiLayout /> Admin Panel
                   </span>
@@ -169,6 +177,7 @@ export default function NavBar() {
                 type="text"
                 placeholder="Search for inspiration..."
                 className="w-full pl-10 pr-3 h-11 rounded-xl bg-white/10 border border-white/15 text-white placeholder-white/60 outline-none focus:border-white/30"
+                onChange={(e) => performSearch(e.target.value)}
               />
             </div>
           </div>
@@ -178,32 +187,56 @@ export default function NavBar() {
         {mobileOpen && (
           <div className="md:hidden px-3 sm:px-4 md:px-6 pb-3">
             <nav className="grid gap-2">
-              {isAuthenticated && (
-               <>
-              <Link href="/home" onClick={() => setMobileOpen(false)} className={linkBtn}>
+              <Link
+                href="/home"
+                onClick={() => setMobileOpen(false)}
+                className={linkBtn}
+              >
                 <span className="inline-flex items-center gap-2">
                   <FiHome /> Feed
                 </span>
               </Link>
-              <Link href="/payments" onClick={() => setMobileOpen(false)} className={linkBtn}>
+              <Link
+                href="/payments"
+                onClick={() => setMobileOpen(false)}
+                className={linkBtn}
+              >
                 <span className="inline-flex items-center gap-2">
                   <FiZap /> Pricing
                 </span>
               </Link>
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                  <span className="inline-flex items-center gap-2">
-                    <FiUser /> My Dashboard
-                  </span>
-                </Link>
-                <Link href="/uploadPin" onClick={() => setMobileOpen(false)} className={linkBtn}>
-                  <span className="inline-flex items-center gap-2">
-                    <FiPlus /> Create pin
-                  </span>
-                </Link>
-                </> 
+
+              {/* User-only items (no admins) */}
+              {isAuthenticated && !isAdmin && (
+                <>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className={linkBtn}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <FiUser /> My Dashboard
+                    </span>
+                  </Link>
+                  <Link
+                    href="/uploadPin"
+                    onClick={() => setMobileOpen(false)}
+                    className={linkBtn}
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <FiPlus /> Create pin
+                    </span>
+                  </Link>
+                </>
               )}
+
+              {/* Admin-only item */}
               {isAuthenticated && isAdmin && (
-                <Link href="/admin" onClick={() => setMobileOpen(false)} className={linkBtn}>
+                <Link
+                  href="/dashboard/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className={linkBtn}
+                >
                   <span className="inline-flex items-center gap-2">
                     <FiLayout /> Admin Panel
                   </span>
@@ -212,10 +245,18 @@ export default function NavBar() {
 
               {!isAuthenticated ? (
                 <>
-                  <Link href="/login" onClick={() => setMobileOpen(false)} className={linkBtn}>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className={linkBtn}
+                  >
                     Log in
                   </Link>
-                  <Link href="/register" onClick={() => setMobileOpen(false)} className={primaryBtn}>
+                  <Link
+                    href="/register"
+                    onClick={() => setMobileOpen(false)}
+                    className={primaryBtn}
+                  >
                     Sign up
                   </Link>
                 </>

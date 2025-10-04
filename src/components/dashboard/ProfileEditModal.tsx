@@ -2,7 +2,7 @@
 "use client";
 
 import { FiX } from "react-icons/fi";
-import type { UserProfile } from "@/mocks/userMocks";
+import type { UserProfile } from "@/types/ui";
 import ProfileEditForm from "./ProfileEditForm";
 
 export default function ProfileEditModal({
@@ -23,11 +23,7 @@ export default function ProfileEditModal({
       <div className="w-full max-w-2xl rounded-2xl bg-[var(--color-violeta)] text-white border border-white/10 shadow-2xl">
         <div className="p-5 flex items-center justify-between border-b border-white/10">
           <h2 className="text-lg font-semibold">Edit Information</h2>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/10"
-            aria-label="Close"
-          >
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10" aria-label="Close">
             <FiX />
           </button>
         </div>

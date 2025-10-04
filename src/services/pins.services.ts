@@ -1,8 +1,9 @@
 // src/services/pins.services.ts (o src/services/pins.ts)
 import axios, { type AxiosRequestHeaders } from "axios";
-import type { IPins } from "@/interfaces/IPins";
+import type { IPins, IComment } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
+import { IHashtag } from "@/interfaces/IHashtag";
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -35,28 +36,35 @@ type AxiosLikeError = {
   response?: { status?: number; statusText?: string; data?: unknown };
 };
 
-interface PinUserSlim {
-  name?: string | null;
-  username?: string | null;
-}
+// interface PinUserSlim {
+//   name?: string | null;
+//   username?: string | null;
+// }
 
 export interface UIPinModal {
+  id: string;
   name: string;
   image: string;
   description?: string | null;
   likes: number;
   comment: number;
   views: number;
+  created: string;
+  comments: IComment[];
+  hashtag: IHashtag
 }
 
 interface PinByIdResponse {
   id: string;
   image: string;
   description?: string | null;
-  likesCount?: number;
-  commentsCount?: number;
-  viewsCount?: number;
-  user?: PinUserSlim | null;
+  likes?: number;
+  comment?: number;
+  name: string;
+  views: number;
+  created: string;
+  comments: IComment[];
+  hashtag: IHashtag;
 }
 // ✅ sin any: estrecha a un tipo auxiliar
 function explainAxiosError(err: unknown) {
@@ -72,7 +80,16 @@ function explainAxiosError(err: unknown) {
 export const getAllPins = async (): Promise<IPins[]> => {
   try {
     const { data } = await api.get<IPins[]>("/pins");
-    return data;
+    return data.map((pin: IPins) => ({
+      id: pin.id,
+      image: pin.image,
+      description: pin.description,
+      likesCount: pin.likesCount,
+      liked: pin.liked,       
+      commentsCount: pin.commentsCount,  
+      views: pin.views,
+      user: pin.user,
+    }));
   } catch (error) {
     console.error("Error getting pins:", explainAxiosError(error));
     return [];
@@ -86,12 +103,16 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
     const { data } = await api.get<PinByIdResponse>(`/pins/${id}`);
 
     return {
-      name: data.user?.name ?? data.user?.username ?? "Unknown",
+      id: data.id,
+      name: data.name,
       image: data.image,
       description: data.description ?? null,
-      likes: typeof data.likesCount === "number" ? data.likesCount : 0,
-      comment: typeof data.commentsCount === "number" ? data.commentsCount : 0,
-      views: typeof data.viewsCount === "number" ? data.viewsCount : 0,
+      likes: data.likes ?? 0,      
+      comment: data.comment ?? 0,  
+      views: data.views ?? 0,
+      created: data.created ?? null,
+      comments: data.comments,
+      hashtag: data.hashtag
     };
   } catch (err) {
     console.error("getPinById failed:", err);
@@ -159,16 +180,95 @@ type UploadPayload = Pick<IUploadPin, "description"> & {
 
 // --- Crear Pin ---
 export const savePin = async (pin: IUploadPin | UploadPayload) => {
+  const payload = {
+    image: readStringKey(pin, "image") ?? readStringKey(pin, "imageUrl"),
+    description: (pin as IUploadPin).description,
+    categoryId: readStringKey(pin, "categoryId"),
+  };
+
+  const { data } = await api.post("/pins", payload);
+  return data;
+};
+
+// --- Add Like ---
+export const addLike = async (pinId: string) => {
+  const token = localStorage.getItem("auth:token");
+  console.log("pinId que se pasa: ", pinId)
+  if(!pinId || !token) {
+    console.log("Error al encontrar pin o token");
+  } 
+
+  return api.post(`/pins/like/${pinId}`,
+    {},
+    {
+      headers: {Authorization: `Bearer ${token}`}
+    }
+  );
+};
+
+// --- Delete Like ---
+export const deleteLike = async (pinId: string) => {
+  const token = localStorage.getItem("auth:token");
+  console.log("pinId que se pasa: ", pinId)
+  if(!pinId || !token) {
+    console.log("Error al encontrar pin o token");
+  }
+
+  return api.delete(`/pins/like/${pinId}`,
+    {
+      headers: {Authorization: `Bearer ${token}`}
+    }
+  )
+}
+
+// --- Create Comment ---
+export const addComment = async (pinId: string, text: string) => {
+  const token = localStorage.getItem("auth:token");
+  console.log("pinId que se pasa: ", pinId)
+    if (!pinId) {
+      console.log("pinId no existe")
+    } if(!token) {
+      console.log("token no existe");
+    }
+
+    try {
+      const res = api.post(`/pins/comments/${pinId}`,
+        {text},
+        { headers: {Authorization: `Bearer ${token}`}}
+      )
+      return res;
+    } catch (error) {
+      console.error("Error making a comment", error);
+    }
+}
+
+// --- Crear Reporte ---
+export const reportTarget = async (
+  targetType: "PIN" | "COMMENT",
+  targetId: string,
+  type: "SPAM" | "INAPPROPRIATE" | "COPYRIGHT",
+  reason?: string
+) => {
+  const token = localStorage.getItem("auth:token");
+  if (!token || !targetId) return null;
+
   try {
-    const payload = {
-      image: readStringKey(pin, "image") ?? readStringKey(pin, "imageUrl"),
-      description: (pin as IUploadPin).description, // esto sí está en tu interfaz
-      categoryId: readStringKey(pin, "categoryId"),
-    };
-    const { data } = await api.post("/pins", payload);
-    return data;
+    const response = await api.post(
+      "/reports",
+      { targetType, targetId, type, reason }, // 👈 DTO
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response
   } catch (error) {
-    console.error("Error creating pin:", explainAxiosError(error));
-    throw error;
+    console.error("Error al realizar reporte: ", error);
   }
 };
+
+export const pinViews = async (pinId: string) => {
+  try {
+    const response = await api.post(`/pins/view/${pinId}`)
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+}
