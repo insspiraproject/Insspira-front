@@ -16,7 +16,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
   const [pinSelected, setPinSelected] = useState<string | null>(null);
 
   const [likesState, setLikesState] = useState<
-    Record<string, { likeView: boolean; likesCount: number }>
+    Record<string, { liked: boolean; likesCount: number }>
   >({});
 
   useEffect(() => {
@@ -36,11 +36,11 @@ export default function PinsList({ searchResults }: PinsListProps) {
   
     const initialState = displayedPins.reduce((acc, pin) => {
       acc[pin.id] = {
-        likeView: pin.liked ?? false,  // <- aquí usamos 'liked' del backend
+        liked: pin.liked ?? false,  // <- aquí usamos 'liked' del backend
         likesCount: pin.likesCount
       };
       return acc;
-    }, {} as Record<string, { likeView: boolean; likesCount: number }>);
+    }, {} as Record<string, { liked: boolean; likesCount: number }>);
   
     setLikesState(initialState);
   }, [displayedPins]);
@@ -68,7 +68,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
           <PinsCard
             key={pin.id}
             pin={normalizePin(pin)}
-            likesState={likesState[pin.id] ?? { likeView: false, likesCount: 0 }}
+            likesState={likesState[pin.id] ?? { liked: false, likesCount: 0 }}
             setLikesState={(newState) =>
               setLikesState(prev => ({ ...prev, [pin.id]: newState }))
             }

@@ -15,7 +15,7 @@ interface PinModalProps {
   id: string;
   onClose: () => void;
   likesState?: {
-    likeView: boolean;
+    liked: boolean;
     likesCount: number;
   };
   setLikesState?: (newState: { likeView: boolean; likesCount: number }) => void;

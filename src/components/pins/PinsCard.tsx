@@ -2,7 +2,6 @@ import { IPins } from "@/interfaces/IPins";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
 import { addLike } from "@/services/pins.services";
-
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
@@ -11,10 +10,10 @@ import { GoHeartFill } from "react-icons/go";
 interface PinsCardProps {
   pin: IPins;
   likesState: {
-    likeView: boolean;
+    liked: boolean;
     likesCount: number;
   };
-  setLikesState: (newState: { likeView: boolean; likesCount: number }) => void;
+  setLikesState: (newState: { liked: boolean; likesCount: number }) => void;
   onOpenModal: () => void;
 }
 
@@ -25,16 +24,14 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation(); // evita abrir el modal
-  
     try {
       await addLike(pin.id);
         setLikesState({
-          likeView: true,
+          liked: true,
           likesCount: likesState.likesCount + 1,
         });
       }
-      }
-    } catch (err) {
+    catch (err) {
       const error = err as AxiosError;
       if (error.response?.status === 403) {
         toast.error("You have reached your daily like limit.");
@@ -65,7 +62,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
           {/* Likes */}
           <div className="flex items-center mr-4">
             <button onClick={handleLike}>
-              {likesState.likeView ? (
+              {likesState.liked ? (
                 <GoHeartFill size={20} color="red" />
               ) : (
                 <FiHeart size={20} />
