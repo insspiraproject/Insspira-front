@@ -32,7 +32,7 @@ export default function FormLogin() {
         const ok = await login(values);
         if (ok) {
           const role = user?.role ?? getRoleFromStorage();
-          router.push(role === "admin" ? "/admin" : "/dashboard");
+          router.push(role === "admin" ? "dashboard/admin" : "/dashboard");
         }
       } finally {
         setSubmitting(false);
