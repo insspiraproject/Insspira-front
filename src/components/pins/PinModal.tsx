@@ -18,7 +18,7 @@ interface PinModalProps {
     liked: boolean;
     likesCount: number;
   };
-  setLikesState?: (newState: { likeView: boolean; likesCount: number }) => void;
+  setLikesState?: (newState: { liked: boolean; likesCount: number }) => void;
 }
 
 interface PinModalType {

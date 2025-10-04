@@ -23,23 +23,25 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
   const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
 
   const handleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // evita abrir el modal
-    try {
-      await addLike(pin.id);
-        setLikesState({
-          liked: true,
-          likesCount: likesState.likesCount + 1,
-        });
-      }
-    catch (err) {
-      const error = err as AxiosError;
-      if (error.response?.status === 403) {
-        toast.error("You have reached your daily like limit.");
-      } else {
-        toast.error("Something went wrong. Please try again.");
-      }
+  e.stopPropagation(); // evita abrir el modal
+  try {
+    await addLike(pin.id);
+
+    setLikesState({
+      liked: !likesState.liked,
+      likesCount: likesState.liked
+        ? likesState.likesCount - 1 // si ya estaba en like → quita
+        : likesState.likesCount + 1, // si no estaba → suma
+    });
+  } catch (err) {
+    const error = err as AxiosError;
+    if (error.response?.status === 403) {
+      toast.error("You have reached your daily like limit.");
+    } else {
+      toast.error("Something went wrong. Please try again.");
     }
-  };
+  }
+};
 
   return (
     <div
@@ -62,7 +64,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
           {/* Likes */}
           <div className="flex items-center mr-4">
             <button onClick={handleLike}>
-              {likesState.liked ? (
+              {likesState.liked === true ? (
                 <GoHeartFill size={20} color="red" />
               ) : (
                 <FiHeart size={20} />

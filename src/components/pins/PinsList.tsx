@@ -36,7 +36,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
   
     const initialState = displayedPins.reduce((acc, pin) => {
       acc[pin.id] = {
-        liked: pin.liked ?? false,  // <- aquí usamos 'liked' del backend
+        liked: pin.liked,  // <- aquí usamos 'liked' del backend
         likesCount: pin.likesCount
       };
       return acc;
@@ -90,7 +90,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
       {isOpen && pinSelected && (
         <PinModal
           id={pinSelected}
-          likesState={likesState[pinSelected] ?? { likesView: false, likesCount: 0 }}
+          likesState={likesState[pinSelected] ?? { liked: false, likesCount: 0 }}
           setLikesState={(newState) =>
             setLikesState(prev => ({ ...prev, [pinSelected]: newState }))
           }
