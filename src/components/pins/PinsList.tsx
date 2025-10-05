@@ -4,7 +4,7 @@ import PinsCard from "@/components/pins/PinsCard";
 import PinModal from "./PinModal";
 import { useEffect, useState } from "react";
 import type { IPins } from "@/interfaces/IPins";
-import { getAllPins } from "@/services/pins.services";
+import { getAllPins, addView } from "@/services/pins.services";
 
 interface PinsListProps {
   searchResults: IPins[] | null;
@@ -72,6 +72,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
             onOpenModal={() => {
               setPinSelected(pin.id);
               setIsOpen(true);
+              addView(pin.id)
             }}
           />
         ))}

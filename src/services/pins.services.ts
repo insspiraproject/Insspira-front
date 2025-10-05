@@ -283,3 +283,12 @@ export const reportTarget = async (
   return null;
   }
 };
+
+export const addView = (pinId: string) => {
+  try {
+    const view = api.post(`/pins/view/${pinId}`);
+    return view;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
