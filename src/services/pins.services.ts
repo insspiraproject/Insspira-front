@@ -243,32 +243,43 @@ export const addComment = async (pinId: string, text: string) => {
 }
 
 // --- Crear Reporte ---
-export const reportTarget = async (
-  targetType: "PIN" | "COMMENT",
-  targetId: string,
-  type: "SPAM" | "INAPPROPRIATE" | "COPYRIGHT",
-  reason?: string
-) => {
-  const token = localStorage.getItem("auth:token");
-  if (!token || !targetId) return null;
 
-  try {
-    const response = await api.post(
-      "/reports",
-      { targetType, targetId, type, reason }, // 👈 DTO
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return response
-  } catch (error) {
-    console.error("Error al realizar reporte: ", error);
-  }
+//Axios nose donde va
+export const useApi = () => {
+  const getAuthHeaders = () => {
+    if (typeof window === "undefined") return {};
+    
+    const token = localStorage.getItem("auth:token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  return { getAuthHeaders };
 };
 
-export const pinViews = async (pinId: string) => {
+
+
+export const reportTarget = async (
+  
+  targetType: "pin" | "comment" | "user",
+  targetId: string,
+  type: "spam" | "violence" | "sexual" | "hate" | "other",
+  reason?: string
+
+) => {
+  
+  
   try {
-    const response = await api.post(`/pins/view/${pinId}`)
+    if (!targetId) return null;
+    console.log(targetId)
+
+    const response = await api.post("/reports", {
+      targetType, targetId, type, reason
+    });
+  
     return response;
+    
   } catch (error) {
-    console.log(error);
+    console.error("Error al reporta: ", error);
+  return null;
   }
-}
+};
