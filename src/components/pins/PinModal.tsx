@@ -39,7 +39,7 @@ interface CommentType {
 }
 
 // --- Tipado para los reportes ---
-type ReportType = 'SPAM' | 'INAPPROPRIATE' | 'COPYRIGHT';
+type ReportType = "spam" | "violence" | "sexual" | "hate" | "other";
 
 const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
   const [pin, setPin] = useState<PinModalType | null>(null);
@@ -49,7 +49,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
 
   // --- Estado para reporte ---
   const [showReportMenu, setShowReportMenu] = useState(false);
-  const [reportType, setReportType] = useState<ReportType>('SPAM');
+  const [reportType, setReportType] = useState<ReportType>('spam');
   const [reason, setReason] = useState("");
 
   useEffect(() => {
@@ -105,7 +105,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
   const handleReport = async () => {
     if (!pin) return;
     try {
-      const res = await reportTarget("PIN", pin.id, reportType, reason);
+      const res = await reportTarget("pin", pin.id, reportType, reason);
       console.log("reporte: ", res);
       toast.success("Reporte enviado con éxito");
       setShowReportMenu(false);
@@ -232,9 +232,11 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
                 setReportType(e.target.value as ReportType)
               }
             >
-              <option value="SPAM">Spam</option>
-              <option value="INAPPROPRIATE">Contenido inapropiado</option>
-              <option value="COPYRIGHT">Copyright</option>
+              <option value="spam">Spam</option>
+              <option value="sexual">Contenido inapropiado</option>
+              <option value="violence">Violencia</option>
+              <option value="hate">Hate</option>
+              <option value="other">Otro</option>
             </select>
 
             <label className="block mb-2 text-sm">Detalle (opcional)</label>
