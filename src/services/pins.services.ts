@@ -278,8 +278,8 @@ export const reportTarget = async (
   
     return response;
     
-  } catch (error: any) {
-
+  } catch (error) {
+    console.error("Error al reporta: ", error);
   return null;
   }
 };
