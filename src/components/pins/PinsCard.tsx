@@ -1,7 +1,7 @@
 import { IPins } from "@/interfaces/IPins";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
-import { addLike, deleteLike} from "@/services/pins.services";
+import { addLike } from "@/services/pins.services";
 
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
@@ -27,20 +27,12 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
     e.stopPropagation(); // evita abrir el modal
   
     try {
-      if (likesState.likeView) {
-        // Ya tiene like → quitar
-        await deleteLike(pin.id);
-        setLikesState({
-          likeView: false,
-          likesCount: likesState.likesCount - 1,
-        });
-      } else {
-        // No tiene like → agregar
-        await addLike(pin.id);
+      await addLike(pin.id);
         setLikesState({
           likeView: true,
           likesCount: likesState.likesCount + 1,
         });
+      }
       }
     } catch (err) {
       const error = err as AxiosError;
