@@ -221,37 +221,6 @@ export const addLike = async (pinId: string) => {
   );
 };
 
-// export const addLike = async (pinId: string) => {
-//   const token = localStorage.getItem("auth:token");
-//   console.log("pinId que se pasa: ", pinId);
-  
-//   if(!pinId || !token) {
-//     throw new Error("Pin ID o token no encontrado");
-//   } 
-
-//   return api.post(`/pins/like/${pinId}`,
-//     {},
-//     {
-//       headers: {Authorization: `Bearer ${token}`}
-//     }
-//   );
-// };
-
-//--- Delete Like ---
-export const deleteLike = async (pinId: string) => {
-  const token = localStorage.getItem("auth:token");
-  console.log("pinId que se pasa: ", pinId)
-  if(!pinId || !token) {
-    console.log("Error al encontrar pin o token");
-  }
-
-  return api.delete(`/pins/deleteLike/${pinId}`,
-    {
-      headers: {Authorization: `Bearer ${token}`}
-    }
-  )
-}
-
 // --- Create Comment ---
 export const addComment = async (pinId: string, text: string) => {
   const token = getAuthToken();
@@ -274,12 +243,6 @@ export const addComment = async (pinId: string, text: string) => {
 }
 
 // --- Crear Reporte ---
-
-//Axios nose donde va
-
-
-
-
 export const reportTarget = async (
   
   targetType: "pin" | "comment" | "user",
@@ -306,3 +269,5 @@ export const reportTarget = async (
   return null;
   }
 };
+
+

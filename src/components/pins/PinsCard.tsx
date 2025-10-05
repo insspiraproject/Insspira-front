@@ -1,7 +1,7 @@
 import { IPins } from "@/interfaces/IPins";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
-import { addLike, deleteLike} from "@/services/pins.services";
+import { addLike} from "@/services/pins.services";
 
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
@@ -29,7 +29,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
     try {
       if (likesState.likeView) {
         // Ya tiene like → quitar
-        await deleteLike(pin.id);
+        await addLike(pin.id);
         setLikesState({
           likeView: false,
           likesCount: likesState.likesCount - 1,
