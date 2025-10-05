@@ -56,6 +56,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
     const fetchPin = async () => {
       setLoading(true);
       const data = await getPinById(id);
+   
       if (data) {
         setPin(data);
         setComments(data.comments || []);
@@ -67,6 +68,8 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
     };
     fetchPin();
   }, [id]);
+
+ 
 
   const handleLike = async () => {
     if (!pin) return;
@@ -85,9 +88,17 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
 
   const handleAddComment = async () => {
     if (!pin || !newComment.trim()) return;
+
+      // DEBUG: Verifica la estructura completa del pin
+  console.log("🔍 DEBUG - Estructura completa del pin:", pin);
+  console.log("📌 pin.id:", pin.id);
+  // console.log("👤 pin.userId:", pin.userId);
     try {
+        // ✅ SOLUCIÓN: Necesitas usar el ID correcto del pin
+    const correctPinId = pin.id; // Esto parece estar mal
+    const res = await addComment(correctPinId, newComment);
       console.log(pin.id)
-      const res = await addComment(pin.id, newComment);
+      // const res = await addComment(pin.id, newComment);
       console.log(res);
       if (!res) return;
       setComments([...comments, res.data]);

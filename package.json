@@ -11,6 +11,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.12",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20.19.11",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
@@ -30,6 +31,7 @@
     "axios": "^1.11.0",
     "echarts": "^5.6.0",
     "echarts-for-react": "^3.0.2",
+    "js-cookie": "^3.0.5",
     "ogl": "^1.0.11",
     "react-toastify": "^11.0.5",
     "swiper": "^11.2.10"

@@ -13,6 +13,8 @@ export default function PostCard({ post }: { post: Post }) {
         alt={post.title}
         className="w-full h-auto object-cover"
         loading="lazy"
+        width={800}
+        height={900}
       />
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition bg-black/40 flex items-end">
         <div className="w-full p-3 text-white">

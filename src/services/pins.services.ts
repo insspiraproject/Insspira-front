@@ -4,6 +4,7 @@ import type { IPins, IComment } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
 import { IHashtag } from "@/interfaces/IHashtag";
+import Cookies from 'js-cookie';
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -13,6 +14,19 @@ const API_URL = (
 
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+
+
+const getAuthToken = (): string | null => {
+
+  const localStorageToken = localStorage.getItem("auth:token");
+  if (localStorageToken) return localStorageToken;
+  
+  
+  const cookieToken = Cookies.get("auth-token");
+  if (cookieToken) return cookieToken;
+  
+  return null;
+};
 
 export const api = axios.create({ baseURL: API_URL, withCredentials: true });
 // ✅ sin any: usa AxiosRequestHeaders
@@ -27,6 +41,7 @@ api.interceptors.request.use((config) => {
       const headers: AxiosRequestHeaders = (config.headers as AxiosRequestHeaders) ?? {};
       headers.Authorization = `Bearer ${token}`;
       config.headers = headers;
+     
     }
   }
   return config;
@@ -206,7 +221,23 @@ export const addLike = async (pinId: string) => {
   );
 };
 
-// --- Delete Like ---
+// export const addLike = async (pinId: string) => {
+//   const token = localStorage.getItem("auth:token");
+//   console.log("pinId que se pasa: ", pinId);
+  
+//   if(!pinId || !token) {
+//     throw new Error("Pin ID o token no encontrado");
+//   } 
+
+//   return api.post(`/pins/like/${pinId}`,
+//     {},
+//     {
+//       headers: {Authorization: `Bearer ${token}`}
+//     }
+//   );
+// };
+
+//--- Delete Like ---
 export const deleteLike = async (pinId: string) => {
   const token = localStorage.getItem("auth:token");
   console.log("pinId que se pasa: ", pinId)
@@ -214,7 +245,7 @@ export const deleteLike = async (pinId: string) => {
     console.log("Error al encontrar pin o token");
   }
 
-  return api.delete(`/pins/like/${pinId}`,
+  return api.delete(`/pins/deleteLike/${pinId}`,
     {
       headers: {Authorization: `Bearer ${token}`}
     }
@@ -223,7 +254,7 @@ export const deleteLike = async (pinId: string) => {
 
 // --- Create Comment ---
 export const addComment = async (pinId: string, text: string) => {
-  const token = localStorage.getItem("auth:token");
+  const token = getAuthToken();
   console.log("pinId que se pasa: ", pinId)
     if (!pinId) {
       console.log("pinId no existe")
@@ -232,7 +263,7 @@ export const addComment = async (pinId: string, text: string) => {
     }
 
     try {
-      const res = api.post(`/pins/comments/${pinId}`,
+      const res = await api.post(`/pins/comments/${pinId}`,
         {text},
         { headers: {Authorization: `Bearer ${token}`}}
       )
@@ -245,16 +276,7 @@ export const addComment = async (pinId: string, text: string) => {
 // --- Crear Reporte ---
 
 //Axios nose donde va
-export const useApi = () => {
-  const getAuthHeaders = () => {
-    if (typeof window === "undefined") return {};
-    
-    const token = localStorage.getItem("auth:token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
 
-  return { getAuthHeaders };
-};
 
 
 
@@ -269,6 +291,7 @@ export const reportTarget = async (
   
   
   try {
+
     if (!targetId) return null;
     console.log(targetId)
 
