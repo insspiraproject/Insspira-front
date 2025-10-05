@@ -58,6 +58,9 @@ export default function PinsList({ searchResults }: PinsListProps) {
     image: pin.image?.trim() ? pin.image : "/architecture.jpg",
   });
 
+
+   
+
   return (
     <div className="flex justify-center h-auto px-4 bg-gradient-to-r from-[#0E172B] to-[#1B273B]">
       <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 md:gap-8 lg:gap-10">
@@ -69,6 +72,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
             setLikesState={(newState) =>
               setLikesState(prev => ({ ...prev, [pin.id]: newState }))
             }
+          
             onOpenModal={() => {
               setPinSelected(pin.id);
               setIsOpen(true);
