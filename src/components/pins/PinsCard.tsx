@@ -1,47 +1,77 @@
 import { IPins } from "@/interfaces/IPins";
 import { FaCommentDots } from "react-icons/fa";
 import SafeImage from "../others/SafeImage";
-import { addLike } from "@/services/pins.services";
+import { addLike, fetchLikeStatus } from "@/services/pins.services";
 import { AxiosError } from "axios";
 import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
 import { GoHeartFill } from "react-icons/go";
+import { useEffect } from "react";
+import Cookies from 'js-cookie';
+
+
+
 
 interface PinsCardProps {
   pin: IPins;
   likesState: {
-    liked: boolean;
     likesCount: number;
   };
-  setLikesState: (newState: { liked: boolean; likesCount: number }) => void;
+  setLikesState: (newState: { likesCount: number }) => void;
   onOpenModal: () => void;
 }
+
+const getAuthToken = (): string | null => {
+
+  const localStorageToken = localStorage.getItem("auth:token");
+  if (localStorageToken) return localStorageToken;
+  
+  
+  const cookieToken = Cookies.get("auth-token");
+  if (cookieToken) return cookieToken;
+  
+  return null;
+};
 
 const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onOpenModal }) => {
   if (!pin) return null;
 
   const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
 
-  const handleLike = async (e: React.MouseEvent) => {
-  e.stopPropagation(); // evita abrir el modal
-  try {
-    await addLike(pin.id);
 
-    setLikesState({
-      liked: !likesState.liked,
-      likesCount: likesState.liked
-        ? likesState.likesCount - 1 // si ya estaba en like → quita
-        : likesState.likesCount + 1, // si no estaba → suma
-    });
-  } catch (err) {
-    const error = err as AxiosError;
-    if (error.response?.status === 403) {
-      toast.error("You have reached your daily like limit.");
-    } else {
-      toast.error("Something went wrong. Please try again.");
+ useEffect(() => {
+    const loadLikeStatus = async () => {
+    try {
+      const data = await fetchLikeStatus(pin.id);
+      setLikesState({
+        likesCount: data.liked, // no likesCount
+      });
+    } catch (error) {
+      console.error("Error al obtener el estado del like:", error);
     }
-  }
-};
+  };
+
+  loadLikeStatus();
+  }, [pin.id]);
+
+
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+
+       const  {data} = await addLike(pin.id);
+        setLikesState({
+          likesCount: likesState.likesCount + (data === true ? 1 : -1)
+        });
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 403) {
+        toast.error("You have reached your daily like limit.");
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
+  };
 
   return (
     <div
@@ -64,7 +94,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
           {/* Likes */}
           <div className="flex items-center mr-4">
             <button onClick={handleLike}>
-              {likesState.liked === true ? (
+              {likesState.likesCount ? (
                 <GoHeartFill size={20} color="red" />
               ) : (
                 <FiHeart size={20} />

@@ -135,6 +135,9 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
   }
 }
 
+
+
+
 export const searchPins = async (query: string): Promise<IPins[]> => {
   try {
     const { data } = await api.get<IPins[]>("/pins/search", { params: { q: query } });
@@ -175,6 +178,7 @@ export const uploadToCloudinary = async (
   formData.append("signature", signatureData.signature);
   formData.append("folder", signatureData.folder);
 
+
   const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
   const res = await axios.post(url, formData, { headers: { "Content-Type": "multipart/form-data" } });
   return res.data as { secure_url: string };
@@ -195,6 +199,7 @@ type UploadPayload = Pick<IUploadPin, "description"> & {
 
 // --- Crear Pin ---
 export const savePin = async (pin: IUploadPin | UploadPayload) => {
+ 
   const payload = {
     image: readStringKey(pin, "image") ?? readStringKey(pin, "imageUrl"),
     description: (pin as IUploadPin).description,
@@ -207,7 +212,7 @@ export const savePin = async (pin: IUploadPin | UploadPayload) => {
 
 // --- Add Like ---
 export const addLike = async (pinId: string) => {
-  const token = localStorage.getItem("auth:token");
+  const token = getAuthToken()
   console.log("pinId que se pasa: ", pinId)
   if(!pinId || !token) {
     console.log("Error al encontrar pin o token");
@@ -219,6 +224,21 @@ export const addLike = async (pinId: string) => {
       headers: {Authorization: `Bearer ${token}`}
     }
   );
+};
+
+// --- View Like ---
+export const fetchLikeStatus = async (pinId: string) => {
+   const token = getAuthToken();
+  if (!pinId || !token) {
+    console.warn("Error al encontrar pin o token");
+    return { liked: false };
+  }
+
+  const { data } = await api.get(`/pins/likeStatus/${pinId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  return data; 
 };
 
 // --- Create Comment ---
@@ -243,12 +263,6 @@ export const addComment = async (pinId: string, text: string) => {
 }
 
 // --- Crear Reporte ---
-
-//Axios nose donde va
-
-
-
-
 export const reportTarget = async (
   
   targetType: "pin" | "comment" | "user",
