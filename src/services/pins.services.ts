@@ -4,6 +4,7 @@ import type { IPins, IComment } from "@/interfaces/IPins";
 import type { IUploadPin } from "@/interfaces/IUploadPin";
 import type { ICategory } from "@/interfaces/ICategory";
 import { IHashtag } from "@/interfaces/IHashtag";
+import Cookies from 'js-cookie';
 
 const API_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -13,6 +14,19 @@ const API_URL = (
 
 const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+
+
+const getAuthToken = (): string | null => {
+
+  const localStorageToken = localStorage.getItem("auth:token");
+  if (localStorageToken) return localStorageToken;
+  
+  
+  const cookieToken = Cookies.get("auth-token");
+  if (cookieToken) return cookieToken;
+  
+  return null;
+};
 
 export const api = axios.create({ baseURL: API_URL, withCredentials: true });
 // ✅ sin any: usa AxiosRequestHeaders
@@ -27,6 +41,7 @@ api.interceptors.request.use((config) => {
       const headers: AxiosRequestHeaders = (config.headers as AxiosRequestHeaders) ?? {};
       headers.Authorization = `Bearer ${token}`;
       config.headers = headers;
+     
     }
   }
   return config;
@@ -120,6 +135,9 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
   }
 }
 
+
+
+
 export const searchPins = async (query: string): Promise<IPins[]> => {
   try {
     const { data } = await api.get<IPins[]>("/pins/search", { params: { q: query } });
@@ -160,6 +178,7 @@ export const uploadToCloudinary = async (
   formData.append("signature", signatureData.signature);
   formData.append("folder", signatureData.folder);
 
+
   const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
   const res = await axios.post(url, formData, { headers: { "Content-Type": "multipart/form-data" } });
   return res.data as { secure_url: string };
@@ -180,6 +199,7 @@ type UploadPayload = Pick<IUploadPin, "description"> & {
 
 // --- Crear Pin ---
 export const savePin = async (pin: IUploadPin | UploadPayload) => {
+ 
   const payload = {
     image: readStringKey(pin, "image") ?? readStringKey(pin, "imageUrl"),
     description: (pin as IUploadPin).description,
@@ -192,7 +212,7 @@ export const savePin = async (pin: IUploadPin | UploadPayload) => {
 
 // --- Add Like ---
 export const addLike = async (pinId: string) => {
-  const token = localStorage.getItem("auth:token");
+  const token = getAuthToken()
   console.log("pinId que se pasa: ", pinId)
   if(!pinId || !token) {
     console.log("Error al encontrar pin o token");
@@ -206,24 +226,22 @@ export const addLike = async (pinId: string) => {
   );
 };
 
-// --- Delete Like ---
-export const deleteLike = async (pinId: string) => {
-  const token = localStorage.getItem("auth:token");
-  console.log("pinId que se pasa: ", pinId)
-  if(!pinId || !token) {
-    console.log("Error al encontrar pin o token");
+// --- View Like ---
+export const fetchLikeStatus = async (pinId: string) => {
+   const token = getAuthToken();
+  if (!pinId || !token) {
+    console.warn("Error al encontrar pin o token");
   }
 
-  return api.delete(`/pins/like/${pinId}`,
-    {
-      headers: {Authorization: `Bearer ${token}`}
-    }
-  )
-}
+  const { data } = await api.get(`/pins/likeStatus/${pinId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data; 
+};
 
 // --- Create Comment ---
 export const addComment = async (pinId: string, text: string) => {
-  const token = localStorage.getItem("auth:token");
+  const token = getAuthToken();
   console.log("pinId que se pasa: ", pinId)
     if (!pinId) {
       console.log("pinId no existe")
@@ -232,7 +250,7 @@ export const addComment = async (pinId: string, text: string) => {
     }
 
     try {
-      const res = api.post(`/pins/comments/${pinId}`,
+      const res = await api.post(`/pins/comments/${pinId}`,
         {text},
         { headers: {Authorization: `Bearer ${token}`}}
       )
@@ -243,21 +261,6 @@ export const addComment = async (pinId: string, text: string) => {
 }
 
 // --- Crear Reporte ---
-
-//Axios nose donde va
-export const useApi = () => {
-  const getAuthHeaders = () => {
-    if (typeof window === "undefined") return {};
-    
-    const token = localStorage.getItem("auth:token");
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  };
-
-  return { getAuthHeaders };
-};
-
-
-
 export const reportTarget = async (
   
   targetType: "pin" | "comment" | "user",
@@ -269,6 +272,7 @@ export const reportTarget = async (
   
   
   try {
+
     if (!targetId) return null;
     console.log(targetId)
 
@@ -283,3 +287,12 @@ export const reportTarget = async (
   return null;
   }
 };
+
+export const addView = (pinId: string) => {
+  try {
+    const view = api.post(`/pins/view/${pinId}`);
+    return view;
+  } catch (error) {
+    console.error("Error: ", error);
+  }
+}
