@@ -10,6 +10,8 @@ interface PinsListProps {
   searchResults: IPins[] | null;
 }
 
+
+
 export default function PinsList({ searchResults }: PinsListProps) {
   const [allPins, setAllPins] = useState<IPins[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +38,7 @@ export default function PinsList({ searchResults }: PinsListProps) {
   
     const initialState = displayedPins.reduce((acc, pin) => {
       acc[pin.id] = {
-        liked: pin.liked,  // <- aquí usamos 'liked' del backend
+        liked: pin.liked ?? false,  // <- aquí usamos 'liked' del backend
         likesCount: pin.likesCount
       };
       return acc;

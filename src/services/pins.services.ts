@@ -66,7 +66,9 @@ export interface UIPinModal {
   views: number;
   created: string;
   comments: IComment[];
-  hashtag: IHashtag
+  hashtag: IHashtag;
+  liked?: boolean;
+  user: string;
 }
 
 interface PinByIdResponse {
@@ -80,6 +82,7 @@ interface PinByIdResponse {
   created: string;
   comments: IComment[];
   hashtag: IHashtag;
+  user: string;
 }
 // ✅ sin any: estrecha a un tipo auxiliar
 function explainAxiosError(err: unknown) {
@@ -116,7 +119,7 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
   try {
     // OJO: tu back es /pins/:id (con S)
     const { data } = await api.get<PinByIdResponse>(`/pins/${id}`);
-
+console.log(data)
     return {
       id: data.id,
       name: data.name,
@@ -127,7 +130,8 @@ export async function getPinById(id: string): Promise<UIPinModal | null> {
       views: data.views ?? 0,
       created: data.created ?? null,
       comments: data.comments,
-      hashtag: data.hashtag
+      hashtag: data.hashtag,
+      user: data.user,
     };
   } catch (err) {
     console.error("getPinById failed:", err);

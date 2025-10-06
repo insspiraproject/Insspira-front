@@ -97,6 +97,7 @@ const PinModal: React.FC<PinModalProps> = ({ id, onClose }) => {
         // ✅ SOLUCIÓN: Necesitas usar el ID correcto del pin
     const correctPinId = pin.id; // Esto parece estar mal
     const res = await addComment(correctPinId, newComment);
+    toast.success("comment made successfully")
       console.log(pin.id)
       // const res = await addComment(pin.id, newComment);
       console.log(res);

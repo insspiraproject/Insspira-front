@@ -114,3 +114,5 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
 };
 
 export default PinsCard;
+
+
