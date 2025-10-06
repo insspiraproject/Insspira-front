@@ -231,13 +231,11 @@ export const fetchLikeStatus = async (pinId: string) => {
    const token = getAuthToken();
   if (!pinId || !token) {
     console.warn("Error al encontrar pin o token");
-    return { liked: false };
   }
 
   const { data } = await api.get(`/pins/likeStatus/${pinId}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-
   return data; 
 };
 

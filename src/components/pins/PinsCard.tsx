@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
 import { GoHeartFill } from "react-icons/go";
 import { useEffect } from "react";
-import Cookies from 'js-cookie';
 
 
 
@@ -15,36 +14,31 @@ import Cookies from 'js-cookie';
 interface PinsCardProps {
   pin: IPins;
   likesState: {
+    liked: boolean;
     likesCount: number;
   };
-  setLikesState: (newState: { likesCount: number }) => void;
+  setLikesState: (newState: { likesCount: number, liked: boolean }) => void;
   onOpenModal: () => void;
 }
 
-const getAuthToken = (): string | null => {
-
-  const localStorageToken = localStorage.getItem("auth:token");
-  if (localStorageToken) return localStorageToken;
-  
-  
-  const cookieToken = Cookies.get("auth-token");
-  if (cookieToken) return cookieToken;
-  
-  return null;
-};
-
 const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onOpenModal }) => {
-  if (!pin) return null;
+  
 
   const comments = typeof pin.commentsCount === "number" ? pin.commentsCount : 0;
 
 
  useEffect(() => {
+  
     const loadLikeStatus = async () => {
+      if (!pin) {
+        return null;
+      }
     try {
       const data = await fetchLikeStatus(pin.id);
+      console.log(data)
       setLikesState({
-        likesCount: data.liked, // no likesCount
+        liked: data.liked, // no likesCount
+        likesCount: data.likesCount || 0
       });
     } catch (error) {
       console.error("Error al obtener el estado del like:", error);
@@ -56,21 +50,24 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
 
 
   const handleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); 
     try {
-
-       const  {data} = await addLike(pin.id);
-        setLikesState({
-          likesCount: likesState.likesCount + (data === true ? 1 : -1)
-        });
+     addLike(pin.id);
+  
+      setLikesState({
+        liked: !likesState.liked,
+        likesCount: likesState.liked
+          ? Math.max(likesState.likesCount - 1, 0)
+          : likesState.likesCount + 1,
+      });
     } catch (err) {
       const error = err as AxiosError;
       if (error.response?.status === 403) {
         toast.error("You have reached your daily like limit.");
       } else {
         toast.error("Something went wrong. Please try again.");
-      }
-    }
+      }
+    }
   };
 
   return (
@@ -100,7 +97,7 @@ const PinsCard: React.FC<PinsCardProps> = ({ pin, likesState, setLikesState, onO
                 <FiHeart size={20} />
               )}
             </button>
-            <span className="ml-1">{likesState.likesCount}</span>
+            <span className="ml-1">{likesState.likesCount ?? 0}</span>
           </div>
 
           {/* Comments */}
